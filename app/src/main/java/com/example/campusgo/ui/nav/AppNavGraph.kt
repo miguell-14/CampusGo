@@ -25,9 +25,12 @@ import com.example.campusgo.data.model.TipoPerfil
 import com.example.campusgo.ui.auth.AuthViewModelFactory
 import com.example.campusgo.ui.auth.LoginScreen
 import com.example.campusgo.ui.auth.RegisterScreen
+import com.example.campusgo.ui.perfil.EditarPerfilScreen
+import com.example.campusgo.ui.perfil.PerfilViewModelFactory
 
 private const val ROTA_LOGIN = "login"
 private const val ROTA_REGISTO = "registo"
+private const val ROTA_EDITAR_PERFIL = "perfil/editar"
 private const val GRAFO_ADMIN = "admin"
 private const val GRAFO_UTILIZADOR = "utilizador"
 private const val ROTA_ADMIN_HOME = "admin/home"
@@ -79,7 +82,11 @@ fun AppNavGraph(
         // entram aqui nos próximos dias e nunca ficam alcançáveis a partir do grafo do utilizador.
         navigation(startDestination = ROTA_ADMIN_HOME, route = GRAFO_ADMIN) {
             composable(ROTA_ADMIN_HOME) {
-                HomePlaceholderScreen(titulo = "Área de Administrador", onLogout = ::terminarSessao)
+                HomePlaceholderScreen(
+                    titulo = "Área de Administrador",
+                    onEditarPerfil = { navController.navigate(ROTA_EDITAR_PERFIL) },
+                    onLogout = ::terminarSessao
+                )
             }
         }
 
@@ -87,7 +94,22 @@ fun AppNavGraph(
         // entram aqui nos próximos dias.
         navigation(startDestination = ROTA_UTILIZADOR_HOME, route = GRAFO_UTILIZADOR) {
             composable(ROTA_UTILIZADOR_HOME) {
-                HomePlaceholderScreen(titulo = "Área de Utilizador", onLogout = ::terminarSessao)
+                HomePlaceholderScreen(
+                    titulo = "Área de Utilizador",
+                    onEditarPerfil = { navController.navigate(ROTA_EDITAR_PERFIL) },
+                    onLogout = ::terminarSessao
+                )
+            }
+        }
+
+        // Ecrã comum aos dois perfis — acessível a partir de qualquer um dos grafos acima.
+        composable(ROTA_EDITAR_PERFIL) {
+            val utilizadorId = sessionManager.getUtilizadorId()
+            if (utilizadorId != null) {
+                EditarPerfilScreen(
+                    viewModel = viewModel(factory = PerfilViewModelFactory(repository, utilizadorId)),
+                    onVoltar = { navController.popBackStack() }
+                )
             }
         }
     }
@@ -98,7 +120,11 @@ fun AppNavGraph(
  * Será substituído pelos ecrãs reais de pedidos (utilizador) e gestão (admin).
  */
 @Composable
-private fun HomePlaceholderScreen(titulo: String, onLogout: () -> Unit) {
+private fun HomePlaceholderScreen(
+    titulo: String,
+    onEditarPerfil: () -> Unit,
+    onLogout: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -108,6 +134,10 @@ private fun HomePlaceholderScreen(titulo: String, onLogout: () -> Unit) {
     ) {
         Text(text = titulo, style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(24.dp))
+        Button(onClick = onEditarPerfil) {
+            Text("Editar perfil")
+        }
+        Spacer(Modifier.height(8.dp))
         Button(onClick = onLogout) {
             Text("Terminar sessão")
         }
