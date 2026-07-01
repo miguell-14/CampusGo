@@ -36,7 +36,30 @@ class UtilizadorRepository(private val utilizadorDao: UtilizadorDao) {
 
     suspend fun getById(id: Long): Utilizador? = utilizadorDao.getById(id)
 
-    suspend fun atualizarPerfil(utilizador: Utilizador) {
-        utilizadorDao.atualizar(utilizador)
+    suspend fun atualizarPerfil(
+        utilizadorId: Long,
+        nome: String,
+        email: String,
+        novaPassword: String?
+    ): Result<Unit> {
+        val atual = utilizadorDao.getById(utilizadorId)
+            ?: return Result.failure(IllegalStateException("Utilizador não encontrado"))
+
+        val outroComMesmoEmail = utilizadorDao.getByEmail(email)
+        if (outroComMesmoEmail != null && outroComMesmoEmail.id != utilizadorId) {
+            return Result.failure(IllegalStateException("Já existe uma conta com este email"))
+        }
+
+        val atualizado = atual.copy(
+            nome = nome,
+            email = email,
+            passwordHash = if (novaPassword.isNullOrBlank()) {
+                atual.passwordHash
+            } else {
+                PasswordUtils.hash(novaPassword)
+            }
+        )
+        utilizadorDao.atualizar(atualizado)
+        return Result.success(Unit)
     }
 }
