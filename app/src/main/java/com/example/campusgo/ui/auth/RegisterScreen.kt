@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.campusgo.data.model.TipoPerfil
+import com.example.campusgo.util.isEmailValido
 
 @Composable
 fun RegisterScreen(
@@ -158,7 +159,7 @@ private fun validarRegisto(
 ): String? = when {
     nome.isBlank() -> "Introduz o nome"
     email.isBlank() -> "Introduz o email"
-    !email.contains("@") -> "Email inválido"
+    !isEmailValido(email) -> "Email inválido"
     password.length < 6 -> "A password deve ter pelo menos 6 caracteres"
     password != confirmarPassword -> "As passwords não coincidem"
     else -> null

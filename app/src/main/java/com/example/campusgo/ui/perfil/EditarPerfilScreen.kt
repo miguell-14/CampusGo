@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.campusgo.util.isEmailValido
 
 @Composable
 fun EditarPerfilScreen(
@@ -139,7 +140,7 @@ private fun validarEdicaoPerfil(
 ): String? = when {
     nome.isBlank() -> "Introduz o nome"
     email.isBlank() -> "Introduz o email"
-    !email.contains("@") -> "Email inválido"
+    !isEmailValido(email) -> "Email inválido"
     novaPassword.isNotBlank() && novaPassword.length < 6 -> "A nova password deve ter pelo menos 6 caracteres"
     novaPassword != confirmarNovaPassword -> "As passwords não coincidem"
     else -> null

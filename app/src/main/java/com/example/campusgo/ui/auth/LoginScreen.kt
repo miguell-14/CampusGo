@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.campusgo.util.isEmailValido
 
 @Composable
 fun LoginScreen(
@@ -106,7 +107,7 @@ fun LoginScreen(
 
 private fun validarLogin(email: String, password: String): String? = when {
     email.isBlank() -> "Introduz o email"
-    !email.contains("@") -> "Email inválido"
+    !isEmailValido(email) -> "Email inválido"
     password.isBlank() -> "Introduz a password"
     else -> null
 }
