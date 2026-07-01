@@ -19,12 +19,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.example.campusgo.data.CategoriaRepository
+import com.example.campusgo.data.PedidoRepository
 import com.example.campusgo.data.SessionManager
 import com.example.campusgo.data.UtilizadorRepository
 import com.example.campusgo.data.model.TipoPerfil
 import com.example.campusgo.ui.auth.AuthViewModelFactory
 import com.example.campusgo.ui.auth.LoginScreen
 import com.example.campusgo.ui.auth.RegisterScreen
+import com.example.campusgo.ui.pedido.CriarPedidoScreen
+import com.example.campusgo.ui.pedido.PedidoViewModelFactory
 import com.example.campusgo.ui.perfil.EditarPerfilScreen
 import com.example.campusgo.ui.perfil.PerfilViewModelFactory
 
@@ -35,10 +39,13 @@ private const val GRAFO_ADMIN = "admin"
 private const val GRAFO_UTILIZADOR = "utilizador"
 private const val ROTA_ADMIN_HOME = "admin/home"
 private const val ROTA_UTILIZADOR_HOME = "utilizador/home"
+private const val ROTA_CRIAR_PEDIDO = "utilizador/pedido/criar"
 
 @Composable
 fun AppNavGraph(
     repository: UtilizadorRepository,
+    pedidoRepository: PedidoRepository,
+    categoriaRepository: CategoriaRepository,
     sessionManager: SessionManager,
     navController: NavHostController = rememberNavController()
 ) {
@@ -85,20 +92,34 @@ fun AppNavGraph(
                 HomePlaceholderScreen(
                     titulo = "Área de Administrador",
                     onEditarPerfil = { navController.navigate(ROTA_EDITAR_PERFIL) },
+                    onCriarPedido = null,
                     onLogout = ::terminarSessao
                 )
             }
         }
 
-        // Grafo exclusivo do Utilizador — rotas de criar/listar/cancelar pedidos
+        // Grafo exclusivo do Utilizador — rotas de listar/cancelar pedidos
         // entram aqui nos próximos dias.
         navigation(startDestination = ROTA_UTILIZADOR_HOME, route = GRAFO_UTILIZADOR) {
             composable(ROTA_UTILIZADOR_HOME) {
                 HomePlaceholderScreen(
                     titulo = "Área de Utilizador",
                     onEditarPerfil = { navController.navigate(ROTA_EDITAR_PERFIL) },
+                    onCriarPedido = { navController.navigate(ROTA_CRIAR_PEDIDO) },
                     onLogout = ::terminarSessao
                 )
+            }
+            composable(ROTA_CRIAR_PEDIDO) {
+                val utilizadorId = sessionManager.getUtilizadorId()
+                if (utilizadorId != null) {
+                    CriarPedidoScreen(
+                        viewModel = viewModel(
+                            factory = PedidoViewModelFactory(pedidoRepository, categoriaRepository, utilizadorId)
+                        ),
+                        onPedidoCriado = { navController.popBackStack() },
+                        onVoltar = { navController.popBackStack() }
+                    )
+                }
             }
         }
 
@@ -123,6 +144,7 @@ fun AppNavGraph(
 private fun HomePlaceholderScreen(
     titulo: String,
     onEditarPerfil: () -> Unit,
+    onCriarPedido: (() -> Unit)?,
     onLogout: () -> Unit
 ) {
     Column(
@@ -134,6 +156,12 @@ private fun HomePlaceholderScreen(
     ) {
         Text(text = titulo, style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(24.dp))
+        if (onCriarPedido != null) {
+            Button(onClick = onCriarPedido) {
+                Text("Criar pedido")
+            }
+            Spacer(Modifier.height(8.dp))
+        }
         Button(onClick = onEditarPerfil) {
             Text("Editar perfil")
         }
