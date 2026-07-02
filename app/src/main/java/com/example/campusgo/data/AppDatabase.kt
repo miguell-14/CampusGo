@@ -1,9 +1,12 @@
 package com.example.campusgo.data
 
+import android.content.ContentValues
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.campusgo.data.dao.CategoriaDao
 import com.example.campusgo.data.dao.PedidoDao
 import com.example.campusgo.data.dao.UtilizadorDao
@@ -28,6 +31,30 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var instance: AppDatabase? = null
 
+        // Categorias iniciais — sem isto o dropdown de "Criar pedido" arranca vazio e
+        // é impossível testar o fluxo do Utilizador antes de existir o CRUD de categorias
+        // do Admin (planeado para mais tarde). O Admin continua livre para editar/eliminar estas.
+        private val CATEGORIAS_SEED = listOf(
+            "Limpeza" to "Problemas de limpeza em espaços comuns",
+            "Manutenção" to "Avarias e reparações em instalações",
+            "Segurança" to "Ocorrências relacionadas com segurança no campus",
+            "Informática" to "Problemas com equipamento ou rede informática"
+        )
+
+        // Corre uma única vez, só quando o ficheiro da BD é criado pela primeira vez.
+        private val seedCallback = object : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                CATEGORIAS_SEED.forEach { (nome, descricao) ->
+                    val values = ContentValues().apply {
+                        put("nome", nome)
+                        put("descricao", descricao)
+                    }
+                    db.insert("categorias", SQLiteDatabase.CONFLICT_IGNORE, values)
+                }
+            }
+        }
+
         // Singleton com double-checked locking: garante uma só instância da BD em toda a app.
         fun getInstance(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
@@ -35,7 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "campusgo.db"
-                ).build().also { instance = it }
+                ).addCallback(seedCallback).build().also { instance = it }
             }
         }
     }
