@@ -38,6 +38,7 @@ fun EditarPerfilScreen(
     var confirmarNovaPassword by remember { mutableStateOf("") }
     var validationError by remember { mutableStateOf<String?>(null) }
 
+    // Ao guardar com sucesso, volta ao ecrã anterior (home do respetivo perfil).
     LaunchedEffect(uiState.sucesso) {
         if (uiState.sucesso) {
             viewModel.limparSucesso()
@@ -72,6 +73,7 @@ fun EditarPerfilScreen(
         )
         Spacer(Modifier.height(8.dp))
 
+        // tipoPerfil não aparece aqui de propósito — decisão 1 do NOTAS.md.
         OutlinedTextField(
             value = novaPassword,
             onValueChange = { novaPassword = it },
@@ -132,6 +134,7 @@ fun EditarPerfilScreen(
     }
 }
 
+// Nova password é opcional: só valida tamanho/confirmação se o utilizador a preencher.
 private fun validarEdicaoPerfil(
     nome: String,
     email: String,

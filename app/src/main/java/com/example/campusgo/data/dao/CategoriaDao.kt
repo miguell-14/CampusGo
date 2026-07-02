@@ -9,6 +9,7 @@ import androidx.room.Update
 import com.example.campusgo.data.model.Categoria
 import kotlinx.coroutines.flow.Flow
 
+// Acesso Room à tabela "categorias" — CRUD usado pelo Admin, leitura usada por todos.
 @Dao
 interface CategoriaDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)

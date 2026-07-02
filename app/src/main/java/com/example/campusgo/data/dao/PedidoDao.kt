@@ -10,6 +10,8 @@ import com.example.campusgo.data.model.EstadoPedido
 import com.example.campusgo.data.model.Pedido
 import kotlinx.coroutines.flow.Flow
 
+// Acesso Room à tabela "pedidos". getTodos/getPorEstado são para as listagens do Admin;
+// getPorUtilizador para o ecrã "Os meus pedidos" do Utilizador.
 @Dao
 interface PedidoDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
@@ -33,6 +35,7 @@ interface PedidoDao {
     @Query("SELECT * FROM pedidos WHERE estado = :estado ORDER BY dataCriacao DESC")
     fun getPorEstado(estado: EstadoPedido): Flow<List<Pedido>>
 
+    // Usado para bloquear a eliminação de uma categoria ainda em uso — decisão 3 do NOTAS.md.
     @Query("SELECT COUNT(*) FROM pedidos WHERE categoriaId = :categoriaId")
     suspend fun contarPorCategoria(categoriaId: Long): Int
 }

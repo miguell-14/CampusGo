@@ -47,6 +47,7 @@ fun RegisterScreen(
     var tipoPerfil by remember { mutableStateOf(TipoPerfil.UTILIZADOR) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
+    // Navega para a home do perfil assim que o registo for bem-sucedido.
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) onRegisterSuccess()
     }
@@ -99,6 +100,7 @@ fun RegisterScreen(
         )
         Spacer(Modifier.height(16.dp))
 
+        // Único momento em que o utilizador escolhe o tipo de perfil — depois fica imutável.
         Text(text = "Tipo de perfil", style = MaterialTheme.typography.labelLarge)
         Row(verticalAlignment = Alignment.CenterVertically) {
             RadioButton(
@@ -151,6 +153,7 @@ fun RegisterScreen(
     }
 }
 
+// Validação local do formulário de registo (nome, email, password e confirmação).
 private fun validarRegisto(
     nome: String,
     email: String,

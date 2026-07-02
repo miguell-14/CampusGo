@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// Estado de UI partilhado pelo LoginScreen e RegisterScreen.
 data class AuthUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
@@ -18,11 +19,13 @@ data class AuthUiState(
     val tipoPerfil: TipoPerfil? = null
 )
 
+// ViewModel de autenticação: login, registo e logout, com persistência via SessionManager.
 class AuthViewModel(
     private val repository: UtilizadorRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
+    // Arranca já "logado" se houver sessão persistida (evita voltar ao login a cada abertura da app).
     private val _uiState = MutableStateFlow(
         AuthUiState(
             isLoggedIn = sessionManager.isLoggedIn(),
@@ -47,6 +50,7 @@ class AuthViewModel(
         }
     }
 
+    // tipoPerfil vem escolhido no RegisterScreen e fica fixo a partir daqui (decisão 1).
     fun registar(nome: String, email: String, password: String, tipoPerfil: TipoPerfil) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }

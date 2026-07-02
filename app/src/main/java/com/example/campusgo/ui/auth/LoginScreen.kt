@@ -37,6 +37,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var validationError by remember { mutableStateOf<String?>(null) }
 
+    // Navega para a home do perfil assim que o login for bem-sucedido.
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) onLoginSuccess()
     }
@@ -105,6 +106,7 @@ fun LoginScreen(
     }
 }
 
+// Validação local do formulário, antes de sequer chamar o repositório.
 private fun validarLogin(email: String, password: String): String? = when {
     email.isBlank() -> "Introduz o email"
     !isEmailValido(email) -> "Email inválido"

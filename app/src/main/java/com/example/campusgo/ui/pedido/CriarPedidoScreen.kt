@@ -40,12 +40,14 @@ fun CriarPedidoScreen(
     val uiState by viewModel.uiState.collectAsState()
     val categorias by viewModel.categorias.collectAsState()
 
+    // Estado local do formulário (a UI é stateless em relação aos dados persistidos).
     var categoriaSelecionada by remember { mutableStateOf<Categoria?>(null) }
     var dropdownAberto by remember { mutableStateOf(false) }
     var localizacao by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
     var validationError by remember { mutableStateOf<String?>(null) }
 
+    // Ao submeter com sucesso, limpa o estado e volta para trás (fecha o ecrã).
     LaunchedEffect(uiState.submitSucesso) {
         if (uiState.submitSucesso) {
             viewModel.limparEstadoSubmissao()
@@ -62,6 +64,7 @@ fun CriarPedidoScreen(
         Text(text = "Criar pedido", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(24.dp))
 
+        // Dropdown de seleção de categoria (lista vem do CategoriaRepository via ViewModel).
         ExposedDropdownMenuBox(
             expanded = dropdownAberto,
             onExpandedChange = { dropdownAberto = it }
@@ -93,6 +96,7 @@ fun CriarPedidoScreen(
         }
         Spacer(Modifier.height(8.dp))
 
+        // Campos de texto simples do formulário (localização e descrição do pedido).
         OutlinedTextField(
             value = localizacao,
             onValueChange = { localizacao = it },
@@ -116,6 +120,8 @@ fun CriarPedidoScreen(
 
         Spacer(Modifier.height(16.dp))
 
+        // Botão de submissão: valida localmente antes de chamar o ViewModel.
+        // fotografiaPath fica sempre null por agora — câmara/galeria ainda não implementadas.
         Button(
             onClick = {
                 validationError = validarPedido(categoriaSelecionada, localizacao, descricao)
@@ -152,6 +158,7 @@ fun CriarPedidoScreen(
     }
 }
 
+// Validação de formulário: todos os campos são obrigatórios exceto a fotografia.
 private fun validarPedido(
     categoria: Categoria?,
     localizacao: String,

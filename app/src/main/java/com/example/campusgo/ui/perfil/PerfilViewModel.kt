@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// Estado de UI do EditarPerfilScreen — sem tipoPerfil, que nunca é editável aqui.
 data class PerfilUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
@@ -25,6 +26,7 @@ class PerfilViewModel(
     private val _uiState = MutableStateFlow(PerfilUiState())
     val uiState: StateFlow<PerfilUiState> = _uiState
 
+    // Carrega os dados atuais do utilizador da sessão para pré-preencher o formulário.
     init {
         viewModelScope.launch {
             repository.getById(utilizadorId)?.let { utilizador ->

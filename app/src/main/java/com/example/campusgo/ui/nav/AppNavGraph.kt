@@ -41,6 +41,9 @@ private const val ROTA_ADMIN_HOME = "admin/home"
 private const val ROTA_UTILIZADOR_HOME = "utilizador/home"
 private const val ROTA_CRIAR_PEDIDO = "utilizador/pedido/criar"
 
+// Grafo de navegação único da app. O controlo de acesso por perfil é estrutural:
+// cada perfil tem o seu próprio grafo aninhado (GRAFO_ADMIN / GRAFO_UTILIZADOR) e as
+// rotas de um nunca são alcançáveis a partir do outro.
 @Composable
 fun AppNavGraph(
     repository: UtilizadorRepository,
@@ -49,12 +52,14 @@ fun AppNavGraph(
     sessionManager: SessionManager,
     navController: NavHostController = rememberNavController()
 ) {
+    // Destino inicial: login se não houver sessão, senão o grafo do perfil guardado.
     val destinoInicial = when {
         !sessionManager.isLoggedIn() -> ROTA_LOGIN
         sessionManager.getTipoPerfil() == TipoPerfil.ADMINISTRADOR -> GRAFO_ADMIN
         else -> GRAFO_UTILIZADOR
     }
 
+    // Usado após login/registo — limpa o back stack para não voltar ao ecrã de login.
     fun navegarParaHomeDoPerfil(tipoPerfil: TipoPerfil?) {
         val grafo = if (tipoPerfil == TipoPerfil.ADMINISTRADOR) GRAFO_ADMIN else GRAFO_UTILIZADOR
         navController.navigate(grafo) {
@@ -62,6 +67,7 @@ fun AppNavGraph(
         }
     }
 
+    // Limpa a sessão e o back stack inteiro, voltando ao login.
     fun terminarSessao() {
         sessionManager.logout()
         navController.navigate(ROTA_LOGIN) {

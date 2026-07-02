@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// Estado de UI partilhado pelo CriarPedidoScreen e pelo ListaPedidosScreen.
 data class PedidoUiState(
     val isSubmitting: Boolean = false,
     val submitError: String? = null,
@@ -21,6 +22,7 @@ data class PedidoUiState(
     val cancelarError: String? = null
 )
 
+// ViewModel único para o fluxo completo de pedidos do Utilizador (criar, listar, cancelar).
 class PedidoViewModel(
     private val pedidoRepository: PedidoRepository,
     categoriaRepository: CategoriaRepository,
@@ -30,12 +32,15 @@ class PedidoViewModel(
     private val _uiState = MutableStateFlow(PedidoUiState())
     val uiState: StateFlow<PedidoUiState> = _uiState
 
+    // Categorias disponíveis para o dropdown do CriarPedidoScreen.
     val categorias: StateFlow<List<Categoria>> = categoriaRepository.getTodas()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    // Pedidos do utilizador da sessão atual, para o ListaPedidosScreen.
     val pedidos: StateFlow<List<Pedido>> = pedidoRepository.getPorUtilizador(utilizadorId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    // Submete um novo pedido; sucesso/erro refletidos no uiState para a UI reagir.
     fun criarPedido(
         categoriaId: Long,
         localizacao: String,
@@ -54,6 +59,7 @@ class PedidoViewModel(
         }
     }
 
+    // Cancela um pedido existente (bloqueado no repositório se já estiver CONCLUIDO).
     fun cancelarPedido(pedido: Pedido) {
         viewModelScope.launch {
             pedidoRepository.cancelar(pedido)
@@ -63,10 +69,12 @@ class PedidoViewModel(
         }
     }
 
+    // Repõe o estado de submissão depois de a UI reagir a sucesso/erro (evita reprocessar).
     fun limparEstadoSubmissao() {
         _uiState.update { it.copy(submitError = null, submitSucesso = false) }
     }
 
+    // Limpa o erro de cancelamento, ex. depois de mostrado ao utilizador.
     fun limparErroCancelar() {
         _uiState.update { it.copy(cancelarError = null) }
     }

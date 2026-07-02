@@ -7,6 +7,8 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.campusgo.data.model.Utilizador
 
+// Acesso Room à tabela "utilizadores". getByEmail serve tanto o login como a validação
+// de email duplicado no registo/edição de perfil.
 @Dao
 interface UtilizadorDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)

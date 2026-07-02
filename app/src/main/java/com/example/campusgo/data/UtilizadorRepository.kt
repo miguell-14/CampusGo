@@ -5,8 +5,10 @@ import com.example.campusgo.data.model.TipoPerfil
 import com.example.campusgo.data.model.Utilizador
 import com.example.campusgo.util.PasswordUtils
 
+// Regras de negócio de conta/autenticação: registo, login e edição de perfil.
 class UtilizadorRepository(private val utilizadorDao: UtilizadorDao) {
 
+    // Cria conta nova; falha se já existir um utilizador com o mesmo email.
     suspend fun registar(
         nome: String,
         email: String,
@@ -25,6 +27,7 @@ class UtilizadorRepository(private val utilizadorDao: UtilizadorDao) {
         return Result.success(utilizadorDao.inserir(utilizador))
     }
 
+    // Valida credenciais comparando a password com o hash guardado (nunca em texto simples).
     suspend fun login(email: String, password: String): Result<Utilizador> {
         val utilizador = utilizadorDao.getByEmail(email)
             ?: return Result.failure(IllegalStateException("Credenciais inválidas"))
@@ -36,6 +39,8 @@ class UtilizadorRepository(private val utilizadorDao: UtilizadorDao) {
 
     suspend fun getById(id: Long): Utilizador? = utilizadorDao.getById(id)
 
+    // Atualiza nome/email/password. tipoPerfil nunca é alterado aqui — ver decisão 1 do NOTAS.md.
+    // A nova password só é recalculada se for indicada; em branco mantém a atual.
     suspend fun atualizarPerfil(
         utilizadorId: Long,
         nome: String,
