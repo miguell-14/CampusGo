@@ -26,6 +26,8 @@ import com.example.campusgo.data.PedidoRepository
 import com.example.campusgo.data.SessionManager
 import com.example.campusgo.data.UtilizadorRepository
 import com.example.campusgo.data.model.TipoPerfil
+import com.example.campusgo.ui.admin.AdminPedidosScreen
+import com.example.campusgo.ui.admin.AdminViewModelFactory
 import com.example.campusgo.ui.auth.AuthViewModelFactory
 import com.example.campusgo.ui.auth.LoginScreen
 import com.example.campusgo.ui.auth.RegisterScreen
@@ -47,6 +49,7 @@ private const val ROTA_CRIAR_PEDIDO = "utilizador/pedido/criar"
 private const val ROTA_LISTA_PEDIDOS = "utilizador/pedido/lista"
 private const val ROTA_DETALHE_PEDIDO_BASE = "utilizador/pedido/detalhe"
 private const val ARG_PEDIDO_ID = "pedidoId"
+private const val ROTA_ADMIN_LISTA_PEDIDOS = "admin/pedido/lista"
 
 // Grafo de navegação único da app. O controlo de acesso por perfil é estrutural:
 // cada perfil tem o seu próprio grafo aninhado (GRAFO_ADMIN / GRAFO_UTILIZADOR) e as
@@ -106,8 +109,17 @@ fun AppNavGraph(
                     titulo = "Área de Administrador",
                     onEditarPerfil = { navController.navigate(ROTA_EDITAR_PERFIL) },
                     onCriarPedido = null,
-                    onVerPedidos = null,
+                    onVerPedidos = { navController.navigate(ROTA_ADMIN_LISTA_PEDIDOS) },
+                    labelVerPedidos = "Ver todos os pedidos",
                     onLogout = ::terminarSessao
+                )
+            }
+            composable(ROTA_ADMIN_LISTA_PEDIDOS) {
+                AdminPedidosScreen(
+                    viewModel = viewModel(
+                        factory = AdminViewModelFactory(pedidoRepository, categoriaRepository, repository)
+                    ),
+                    onVoltar = { navController.popBackStack() }
                 )
             }
         }
@@ -120,6 +132,7 @@ fun AppNavGraph(
                     onEditarPerfil = { navController.navigate(ROTA_EDITAR_PERFIL) },
                     onCriarPedido = { navController.navigate(ROTA_CRIAR_PEDIDO) },
                     onVerPedidos = { navController.navigate(ROTA_LISTA_PEDIDOS) },
+                    labelVerPedidos = "Os meus pedidos",
                     onLogout = ::terminarSessao
                 )
             }
@@ -190,6 +203,7 @@ private fun HomePlaceholderScreen(
     onEditarPerfil: () -> Unit,
     onCriarPedido: (() -> Unit)?,
     onVerPedidos: (() -> Unit)?,
+    labelVerPedidos: String = "Ver pedidos",
     onLogout: () -> Unit
 ) {
     Column(
@@ -209,7 +223,7 @@ private fun HomePlaceholderScreen(
         }
         if (onVerPedidos != null) {
             Button(onClick = onVerPedidos) {
-                Text("Os meus pedidos")
+                Text(labelVerPedidos)
             }
             Spacer(Modifier.height(8.dp))
         }

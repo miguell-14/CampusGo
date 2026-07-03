@@ -32,6 +32,9 @@ class PedidoRepository(private val pedidoDao: PedidoDao) {
     fun getPorUtilizador(utilizadorId: Long): Flow<List<Pedido>> =
         pedidoDao.getPorUtilizador(utilizadorId)
 
+    // Lista reativa de todos os pedidos de todos os utilizadores — usada no AdminPedidosScreen.
+    fun getTodos(): Flow<List<Pedido>> = pedidoDao.getTodos()
+
     // Pedido individual por id — para o futuro DetalhePedidoScreen.
     suspend fun getById(id: Long): Pedido? = pedidoDao.getById(id)
 

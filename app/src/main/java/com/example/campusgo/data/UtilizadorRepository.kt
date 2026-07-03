@@ -4,6 +4,7 @@ import com.example.campusgo.data.dao.UtilizadorDao
 import com.example.campusgo.data.model.TipoPerfil
 import com.example.campusgo.data.model.Utilizador
 import com.example.campusgo.util.PasswordUtils
+import kotlinx.coroutines.flow.Flow
 
 // Regras de negócio de conta/autenticação: registo, login e edição de perfil.
 class UtilizadorRepository(private val utilizadorDao: UtilizadorDao) {
@@ -38,6 +39,9 @@ class UtilizadorRepository(private val utilizadorDao: UtilizadorDao) {
     }
 
     suspend fun getById(id: Long): Utilizador? = utilizadorDao.getById(id)
+
+    // Lista reativa de todos os utilizadores, usada no AdminPedidosScreen para mostrar quem fez cada pedido.
+    fun getTodos(): Flow<List<Utilizador>> = utilizadorDao.getTodos()
 
     // Atualiza nome/email/password. tipoPerfil nunca é alterado aqui — ver decisão 1 do NOTAS.md.
     // A nova password só é recalculada se for indicada; em branco mantém a atual.

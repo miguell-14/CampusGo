@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.campusgo.data.model.Utilizador
+import kotlinx.coroutines.flow.Flow
 
 // Acesso Room à tabela "utilizadores". getByEmail serve tanto o login como a validação
 // de email duplicado no registo/edição de perfil.
@@ -22,4 +23,8 @@ interface UtilizadorDao {
 
     @Query("SELECT * FROM utilizadores WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): Utilizador?
+
+    // Lista reativa de todos os utilizadores — usada pelo Admin para mostrar quem fez cada pedido.
+    @Query("SELECT * FROM utilizadores")
+    fun getTodos(): Flow<List<Utilizador>>
 }
