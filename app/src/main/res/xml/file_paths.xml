@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pasta partilhada com o FileProvider: cache/, onde a câmara grava a foto temporária. -->
+<paths>
+    <cache-path name="fotos_pedidos" path="." />
+</paths>
