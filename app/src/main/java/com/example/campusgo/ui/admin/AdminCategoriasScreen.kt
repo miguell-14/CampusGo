@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.campusgo.data.model.Categoria
+import com.example.campusgo.ui.components.EcraComTopBar
 
 // Ecrã do Admin: CRUD de categorias. Criar (formulário no topo), editar e eliminar (por categoria,
 // na lista) — eliminar é bloqueado pelo ViewModel se a categoria ainda tiver pedidos associados
@@ -47,14 +48,12 @@ fun AdminCategoriasScreen(
     var categoriaParaEditar by remember { mutableStateOf<Categoria?>(null) }
     var categoriaParaEliminar by remember { mutableStateOf<Categoria?>(null) }
 
+    EcraComTopBar(titulo = "Categorias", onVoltar = onVoltar) { modifierConteudo ->
     Column(
-        modifier = Modifier
+        modifier = modifierConteudo
             .fillMaxSize()
             .padding(24.dp)
     ) {
-        Text(text = "Categorias", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(16.dp))
-
         // Formulário de criação de categoria nova.
         OutlinedTextField(
             value = nomeNova,
@@ -113,15 +112,7 @@ fun AdminCategoriasScreen(
                 }
             }
         }
-
-        Spacer(Modifier.height(16.dp))
-
-        TextButton(
-            onClick = onVoltar,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Voltar")
-        }
+    }
     }
 
     // Diálogo de edição — pré-preenchido com o nome/descrição atuais da categoria escolhida.

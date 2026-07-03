@@ -15,7 +15,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.example.campusgo.data.model.EstadoPedido
 import com.example.campusgo.data.model.Pedido
 import com.example.campusgo.data.model.Utilizador
+import com.example.campusgo.ui.components.EcraComTopBar
 import com.example.campusgo.ui.pedido.corEstado
 import com.example.campusgo.ui.pedido.formatarData
 import com.example.campusgo.ui.pedido.labelEstado
@@ -54,63 +54,53 @@ fun AdminPedidosScreen(
         pedidos.filter { it.estado == filtroEstado }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
-        Text(text = "Todos os pedidos", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(16.dp))
-
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item {
-                FilterChip(
-                    selected = filtroEstado == null,
-                    onClick = { filtroEstado = null },
-                    label = { Text("Todos") }
-                )
-            }
-            items(EstadoPedido.entries.toList()) { estado ->
-                FilterChip(
-                    selected = filtroEstado == estado,
-                    onClick = { filtroEstado = estado },
-                    label = { Text(labelEstado(estado)) }
-                )
-            }
-        }
-        Spacer(Modifier.height(16.dp))
-
-        if (pedidosFiltrados.isEmpty()) {
-            Text(
-                text = if (pedidos.isEmpty()) {
-                    "Ainda não há pedidos submetidos."
-                } else {
-                    "Não há pedidos com o estado selecionado."
-                },
-                style = MaterialTheme.typography.bodyMedium
-            )
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(pedidosFiltrados, key = { it.id }) { pedido ->
-                    PedidoAdminItem(
-                        pedido = pedido,
-                        nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
-                        nomeUtilizador = utilizadores.nomeDoUtilizador(pedido.utilizadorId),
-                        onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
+    EcraComTopBar(titulo = "Todos os pedidos", onVoltar = onVoltar) { modifierConteudo ->
+        Column(
+            modifier = modifierConteudo
+                .fillMaxSize()
+                .padding(24.dp)
+        ) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    FilterChip(
+                        selected = filtroEstado == null,
+                        onClick = { filtroEstado = null },
+                        label = { Text("Todos") }
+                    )
+                }
+                items(EstadoPedido.entries.toList()) { estado ->
+                    FilterChip(
+                        selected = filtroEstado == estado,
+                        onClick = { filtroEstado = estado },
+                        label = { Text(labelEstado(estado)) }
                     )
                 }
             }
-        }
+            Spacer(Modifier.height(16.dp))
 
-        Spacer(Modifier.height(16.dp))
-
-        TextButton(
-            onClick = onVoltar,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Voltar")
+            if (pedidosFiltrados.isEmpty()) {
+                Text(
+                    text = if (pedidos.isEmpty()) {
+                        "Ainda não há pedidos submetidos."
+                    } else {
+                        "Não há pedidos com o estado selecionado."
+                    },
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(pedidosFiltrados, key = { it.id }) { pedido ->
+                        PedidoAdminItem(
+                            pedido = pedido,
+                            nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
+                            nomeUtilizador = utilizadores.nomeDoUtilizador(pedido.utilizadorId),
+                            onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
+                        )
+                    }
+                }
+            }
         }
     }
 }

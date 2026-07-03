@@ -13,7 +13,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -24,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.campusgo.ui.components.EcraComTopBar
 import com.example.campusgo.util.isEmailValido
 
 @Composable
@@ -46,15 +46,13 @@ fun EditarPerfilScreen(
         }
     }
 
+    EcraComTopBar(titulo = "Editar perfil", onVoltar = onVoltar) { modifierConteudo ->
     Column(
-        modifier = Modifier
+        modifier = modifierConteudo
             .fillMaxSize()
             .padding(24.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Editar perfil", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(24.dp))
-
         OutlinedTextField(
             value = nome,
             onValueChange = { nome = it },
@@ -124,13 +122,7 @@ fun EditarPerfilScreen(
                 Text("Guardar")
             }
         }
-
-        TextButton(
-            onClick = onVoltar,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Cancelar")
-        }
+    }
     }
 }
 

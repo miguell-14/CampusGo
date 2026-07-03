@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.campusgo.data.model.EstadoPedido
+import com.example.campusgo.ui.components.EcraComTopBar
 import com.example.campusgo.ui.pedido.FotografiaDoPedido
 import com.example.campusgo.ui.pedido.corEstado
 import com.example.campusgo.ui.pedido.formatarData
@@ -50,14 +51,12 @@ fun AdminDetalhePedidoScreen(
     // Confirmação obrigatória antes de eliminar — ação destrutiva e irreversível.
     var confirmarEliminar by remember { mutableStateOf(false) }
 
+    EcraComTopBar(titulo = "Detalhe do pedido", onVoltar = onVoltar) { modifierConteudo ->
     Column(
-        modifier = Modifier
+        modifier = modifierConteudo
             .fillMaxSize()
             .padding(24.dp)
     ) {
-        Text(text = "Detalhe do pedido", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(16.dp))
-
         if (pedido == null) {
             // Pode acontecer se o pedido tiver sido eliminado entretanto noutro ecrã.
             Text(
@@ -122,15 +121,8 @@ fun AdminDetalhePedidoScreen(
             TextButton(onClick = { confirmarEliminar = true }) {
                 Text("Eliminar pedido", color = MaterialTheme.colorScheme.error)
             }
-            Spacer(Modifier.height(8.dp))
         }
-
-        TextButton(
-            onClick = onVoltar,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Voltar")
-        }
+    }
     }
 
     if (confirmarEliminar && pedido != null) {

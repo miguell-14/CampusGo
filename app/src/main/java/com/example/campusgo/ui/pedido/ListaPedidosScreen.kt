@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.example.campusgo.data.model.Categoria
 import com.example.campusgo.data.model.EstadoPedido
 import com.example.campusgo.data.model.Pedido
+import com.example.campusgo.ui.components.EcraComTopBar
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -38,41 +39,31 @@ fun ListaPedidosScreen(
     val pedidos by viewModel.pedidos.collectAsState()
     val categorias by viewModel.categorias.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
-        Text(text = "Os meus pedidos", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(16.dp))
-
-        // Estado vazio vs. lista de pedidos (cada item é um Card, ver PedidoItem abaixo).
-        if (pedidos.isEmpty()) {
-            Text(
-                text = "Ainda não tens pedidos submetidos.",
-                style = MaterialTheme.typography.bodyMedium
-            )
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(pedidos, key = { it.id }) { pedido ->
-                    PedidoItem(
-                        pedido = pedido,
-                        nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
-                        onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
-                    )
+    EcraComTopBar(titulo = "Os meus pedidos", onVoltar = onVoltar) { modifierConteudo ->
+        Column(
+            modifier = modifierConteudo
+                .fillMaxSize()
+                .padding(24.dp)
+        ) {
+            // Estado vazio vs. lista de pedidos (cada item é um Card, ver PedidoItem abaixo).
+            if (pedidos.isEmpty()) {
+                Text(
+                    text = "Ainda não tens pedidos submetidos.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(pedidos, key = { it.id }) { pedido ->
+                        PedidoItem(
+                            pedido = pedido,
+                            nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
+                            onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
+                        )
+                    }
                 }
             }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        TextButton(
-            onClick = onVoltar,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Voltar")
         }
     }
 }

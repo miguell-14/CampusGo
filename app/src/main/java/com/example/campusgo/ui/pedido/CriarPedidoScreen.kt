@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.campusgo.data.model.Categoria
+import com.example.campusgo.ui.components.EcraComTopBar
 import com.example.campusgo.util.PhotoUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,15 +112,13 @@ fun CriarPedidoScreen(
         }
     }
 
+    EcraComTopBar(titulo = "Criar pedido", onVoltar = onVoltar) { modifierConteudo ->
     Column(
-        modifier = Modifier
+        modifier = modifierConteudo
             .fillMaxSize()
             .padding(24.dp),
         verticalArrangement = Arrangement.Top
     ) {
-        Text(text = "Criar pedido", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(24.dp))
-
         // Dropdown de seleção de categoria (lista vem do CategoriaRepository via ViewModel).
         ExposedDropdownMenuBox(
             expanded = dropdownAberto,
@@ -243,13 +242,7 @@ fun CriarPedidoScreen(
                 Text("Submeter pedido")
             }
         }
-
-        TextButton(
-            onClick = onVoltar,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Cancelar")
-        }
+    }
     }
 }
 
