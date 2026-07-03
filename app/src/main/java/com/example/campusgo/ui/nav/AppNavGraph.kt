@@ -26,6 +26,7 @@ import com.example.campusgo.data.PedidoRepository
 import com.example.campusgo.data.SessionManager
 import com.example.campusgo.data.UtilizadorRepository
 import com.example.campusgo.data.model.TipoPerfil
+import com.example.campusgo.ui.admin.AdminDetalhePedidoScreen
 import com.example.campusgo.ui.admin.AdminPedidosScreen
 import com.example.campusgo.ui.admin.AdminViewModelFactory
 import com.example.campusgo.ui.auth.AuthViewModelFactory
@@ -50,6 +51,7 @@ private const val ROTA_LISTA_PEDIDOS = "utilizador/pedido/lista"
 private const val ROTA_DETALHE_PEDIDO_BASE = "utilizador/pedido/detalhe"
 private const val ARG_PEDIDO_ID = "pedidoId"
 private const val ROTA_ADMIN_LISTA_PEDIDOS = "admin/pedido/lista"
+private const val ROTA_ADMIN_DETALHE_PEDIDO_BASE = "admin/pedido/detalhe"
 
 // Grafo de navegação único da app. O controlo de acesso por perfil é estrutural:
 // cada perfil tem o seu próprio grafo aninhado (GRAFO_ADMIN / GRAFO_UTILIZADOR) e as
@@ -119,8 +121,26 @@ fun AppNavGraph(
                     viewModel = viewModel(
                         factory = AdminViewModelFactory(pedidoRepository, categoriaRepository, repository)
                     ),
-                    onVoltar = { navController.popBackStack() }
+                    onVoltar = { navController.popBackStack() },
+                    onAbrirDetalhe = { pedidoId ->
+                        navController.navigate("$ROTA_ADMIN_DETALHE_PEDIDO_BASE/$pedidoId")
+                    }
                 )
+            }
+            composable(
+                route = "$ROTA_ADMIN_DETALHE_PEDIDO_BASE/{$ARG_PEDIDO_ID}",
+                arguments = listOf(navArgument(ARG_PEDIDO_ID) { type = NavType.LongType })
+            ) { backStackEntry ->
+                val pedidoId = backStackEntry.arguments?.getLong(ARG_PEDIDO_ID)
+                if (pedidoId != null) {
+                    AdminDetalhePedidoScreen(
+                        viewModel = viewModel(
+                            factory = AdminViewModelFactory(pedidoRepository, categoriaRepository, repository)
+                        ),
+                        pedidoId = pedidoId,
+                        onVoltar = { navController.popBackStack() }
+                    )
+                }
             }
         }
 

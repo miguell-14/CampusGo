@@ -46,4 +46,14 @@ class PedidoRepository(private val pedidoDao: PedidoDao) {
         pedidoDao.remover(pedido)
         return Result.success(Unit)
     }
+
+    // Ação do Admin: muda o estado de um pedido (sem restrições — o Admin pode ir para qualquer estado).
+    suspend fun atualizarEstado(pedido: Pedido, novoEstado: EstadoPedido) {
+        pedidoDao.atualizar(pedido.copy(estado = novoEstado))
+    }
+
+    // Ação do Admin: elimina definitivamente um pedido, seja qual for o seu estado.
+    suspend fun eliminar(pedido: Pedido) {
+        pedidoDao.remover(pedido)
+    }
 }

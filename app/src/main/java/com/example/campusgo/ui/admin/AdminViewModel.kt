@@ -7,16 +7,18 @@ import com.example.campusgo.data.CategoriaRepository
 import com.example.campusgo.data.PedidoRepository
 import com.example.campusgo.data.UtilizadorRepository
 import com.example.campusgo.data.model.Categoria
+import com.example.campusgo.data.model.EstadoPedido
 import com.example.campusgo.data.model.Pedido
 import com.example.campusgo.data.model.Utilizador
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-// ViewModel do Admin para a gestão de pedidos. Por agora só expõe as listas para visualização
-// (AdminPedidosScreen) — alterar estado, eliminar e o CRUD de categorias entram nos próximos passos.
+// ViewModel do Admin para a gestão de pedidos: ver todos, alterar estado e eliminar
+// (AdminPedidosScreen). O CRUD de categorias fica para um próximo passo.
 class AdminViewModel(
-    pedidoRepository: PedidoRepository,
+    private val pedidoRepository: PedidoRepository,
     categoriaRepository: CategoriaRepository,
     utilizadorRepository: UtilizadorRepository
 ) : ViewModel() {
@@ -32,6 +34,20 @@ class AdminViewModel(
     // Utilizadores, para mostrar quem fez cada pedido.
     val utilizadores: StateFlow<List<Utilizador>> = utilizadorRepository.getTodos()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Muda o estado de um pedido — o Admin pode mover para qualquer um dos 4 estados.
+    fun alterarEstado(pedido: Pedido, novoEstado: EstadoPedido) {
+        viewModelScope.launch {
+            pedidoRepository.atualizarEstado(pedido, novoEstado)
+        }
+    }
+
+    // Elimina definitivamente um pedido (a UI só chama isto depois de confirmação explícita).
+    fun eliminarPedido(pedido: Pedido) {
+        viewModelScope.launch {
+            pedidoRepository.eliminar(pedido)
+        }
+    }
 }
 
 class AdminViewModelFactory(

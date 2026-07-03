@@ -84,14 +84,7 @@ fun DetalhePedidoScreen(
                 Spacer(Modifier.height(16.dp))
                 Text(text = "Fotografia", style = MaterialTheme.typography.labelMedium)
                 Spacer(Modifier.height(8.dp))
-                val bitmap = remember(path) { BitmapFactory.decodeFile(path)?.asImageBitmap() }
-                bitmap?.let {
-                    Image(
-                        bitmap = it,
-                        contentDescription = "Fotografia do pedido",
-                        modifier = Modifier.size(200.dp)
-                    )
-                }
+                FotografiaDoPedido(path)
             }
 
             Spacer(Modifier.height(24.dp))
@@ -132,4 +125,18 @@ fun DetalhePedidoScreen(
         },
         onDismiss = { pedidoParaCancelar = null }
     )
+}
+
+// Pré-visualização da fotografia a partir do caminho gravado em armazenamento interno — partilhada
+// entre o DetalhePedidoScreen do Utilizador e o do Admin.
+@Composable
+fun FotografiaDoPedido(path: String) {
+    val bitmap = remember(path) { BitmapFactory.decodeFile(path)?.asImageBitmap() }
+    bitmap?.let {
+        Image(
+            bitmap = it,
+            contentDescription = "Fotografia do pedido",
+            modifier = Modifier.size(200.dp)
+        )
+    }
 }

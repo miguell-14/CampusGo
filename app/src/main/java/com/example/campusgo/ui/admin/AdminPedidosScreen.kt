@@ -27,12 +27,14 @@ import com.example.campusgo.ui.pedido.formatarData
 import com.example.campusgo.ui.pedido.labelEstado
 import com.example.campusgo.ui.pedido.nomeDaCategoria
 
-// Ecrã do Admin: lista todos os pedidos de todos os utilizadores. Por agora só visualização —
-// alterar estado e eliminar entram num passo seguinte, sobre esta mesma lista.
+// Ecrã do Admin: lista todos os pedidos de todos os utilizadores. Tocar num pedido abre o
+// AdminDetalhePedidoScreen — é lá que se altera o estado e se elimina, depois de ver o pedido
+// completo (incluindo a fotografia).
 @Composable
 fun AdminPedidosScreen(
     viewModel: AdminViewModel,
-    onVoltar: () -> Unit
+    onVoltar: () -> Unit,
+    onAbrirDetalhe: (Long) -> Unit
 ) {
     val pedidos by viewModel.pedidos.collectAsState()
     val categorias by viewModel.categorias.collectAsState()
@@ -59,7 +61,8 @@ fun AdminPedidosScreen(
                     PedidoAdminItem(
                         pedido = pedido,
                         nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
-                        nomeUtilizador = utilizadores.nomeDoUtilizador(pedido.utilizadorId)
+                        nomeUtilizador = utilizadores.nomeDoUtilizador(pedido.utilizadorId),
+                        onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
                     )
                 }
             }
@@ -77,14 +80,18 @@ fun AdminPedidosScreen(
 }
 
 // Card de um pedido do ponto de vista do Admin: quem o fez, categoria, estado, localização,
-// descrição e data. Ainda sem ações (alterar estado / eliminar vêm a seguir).
+// descrição e data. Só visualização — as ações vivem no AdminDetalhePedidoScreen.
 @Composable
 private fun PedidoAdminItem(
     pedido: Pedido,
     nomeCategoria: String,
-    nomeUtilizador: String
+    nomeUtilizador: String,
+    onAbrirDetalhe: () -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        onClick = onAbrirDetalhe,
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -112,5 +119,6 @@ private fun PedidoAdminItem(
     }
 }
 
-private fun List<Utilizador>.nomeDoUtilizador(utilizadorId: Long): String =
+// Não é "private": também usado pelo AdminDetalhePedidoScreen, no mesmo package.
+fun List<Utilizador>.nomeDoUtilizador(utilizadorId: Long): String =
     firstOrNull { it.id == utilizadorId }?.nome ?: "Utilizador desconhecido"
