@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.campusgo.data.CategoriaRepository
 import com.example.campusgo.data.PedidoRepository
 import com.example.campusgo.data.SessionManager
@@ -28,6 +30,7 @@ import com.example.campusgo.ui.auth.AuthViewModelFactory
 import com.example.campusgo.ui.auth.LoginScreen
 import com.example.campusgo.ui.auth.RegisterScreen
 import com.example.campusgo.ui.pedido.CriarPedidoScreen
+import com.example.campusgo.ui.pedido.DetalhePedidoScreen
 import com.example.campusgo.ui.pedido.ListaPedidosScreen
 import com.example.campusgo.ui.pedido.PedidoViewModelFactory
 import com.example.campusgo.ui.perfil.EditarPerfilScreen
@@ -42,6 +45,8 @@ private const val ROTA_ADMIN_HOME = "admin/home"
 private const val ROTA_UTILIZADOR_HOME = "utilizador/home"
 private const val ROTA_CRIAR_PEDIDO = "utilizador/pedido/criar"
 private const val ROTA_LISTA_PEDIDOS = "utilizador/pedido/lista"
+private const val ROTA_DETALHE_PEDIDO_BASE = "utilizador/pedido/detalhe"
+private const val ARG_PEDIDO_ID = "pedidoId"
 
 // Grafo de navegação único da app. O controlo de acesso por perfil é estrutural:
 // cada perfil tem o seu próprio grafo aninhado (GRAFO_ADMIN / GRAFO_UTILIZADOR) e as
@@ -137,6 +142,25 @@ fun AppNavGraph(
                         viewModel = viewModel(
                             factory = PedidoViewModelFactory(pedidoRepository, categoriaRepository, utilizadorId)
                         ),
+                        onVoltar = { navController.popBackStack() },
+                        onAbrirDetalhe = { pedidoId ->
+                            navController.navigate("$ROTA_DETALHE_PEDIDO_BASE/$pedidoId")
+                        }
+                    )
+                }
+            }
+            composable(
+                route = "$ROTA_DETALHE_PEDIDO_BASE/{$ARG_PEDIDO_ID}",
+                arguments = listOf(navArgument(ARG_PEDIDO_ID) { type = NavType.LongType })
+            ) { backStackEntry ->
+                val utilizadorId = sessionManager.getUtilizadorId()
+                val pedidoId = backStackEntry.arguments?.getLong(ARG_PEDIDO_ID)
+                if (utilizadorId != null && pedidoId != null) {
+                    DetalhePedidoScreen(
+                        viewModel = viewModel(
+                            factory = PedidoViewModelFactory(pedidoRepository, categoriaRepository, utilizadorId)
+                        ),
+                        pedidoId = pedidoId,
                         onVoltar = { navController.popBackStack() }
                     )
                 }

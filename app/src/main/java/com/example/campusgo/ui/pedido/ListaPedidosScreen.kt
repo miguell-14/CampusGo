@@ -18,9 +18,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -30,18 +27,16 @@ import com.example.campusgo.data.model.Pedido
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-// Ecrã do Utilizador: lista os seus próprios pedidos com estado visível e permite cancelar.
+// Ecrã do Utilizador: lista os seus próprios pedidos com estado visível.
+// Cancelar só é feito a partir do DetalhePedidoScreen (aberto ao tocar num pedido).
 @Composable
 fun ListaPedidosScreen(
     viewModel: PedidoViewModel,
-    onVoltar: () -> Unit
+    onVoltar: () -> Unit,
+    onAbrirDetalhe: (Long) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
     val pedidos by viewModel.pedidos.collectAsState()
     val categorias by viewModel.categorias.collectAsState()
-
-    // Pedido à espera de confirmação de cancelamento (null = nenhum diálogo aberto).
-    var pedidoParaCancelar by remember { mutableStateOf<Pedido?>(null) }
 
     Column(
         modifier = Modifier
@@ -49,13 +44,6 @@ fun ListaPedidosScreen(
             .padding(24.dp)
     ) {
         Text(text = "Os meus pedidos", style = MaterialTheme.typography.headlineMedium)
-
-        // Erro de cancelamento (ex.: tentar cancelar um pedido já concluído).
-        uiState.cancelarError?.let { mensagem ->
-            Spacer(Modifier.height(8.dp))
-            Text(text = mensagem, color = MaterialTheme.colorScheme.error)
-        }
-
         Spacer(Modifier.height(16.dp))
 
         // Estado vazio vs. lista de pedidos (cada item é um Card, ver PedidoItem abaixo).
@@ -72,7 +60,7 @@ fun ListaPedidosScreen(
                     PedidoItem(
                         pedido = pedido,
                         nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
-                        onCancelar = { pedidoParaCancelar = pedido }
+                        onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
                     )
                 }
             }
@@ -87,38 +75,46 @@ fun ListaPedidosScreen(
             Text("Voltar")
         }
     }
-
-    // Confirmação obrigatória antes de cancelar, para evitar cancelamentos acidentais.
-    pedidoParaCancelar?.let { pedido ->
-        AlertDialog(
-            onDismissRequest = { pedidoParaCancelar = null },
-            title = { Text("Cancelar pedido") },
-            text = { Text("Tens a certeza que queres cancelar este pedido?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.cancelarPedido(pedido)
-                    pedidoParaCancelar = null
-                }) {
-                    Text("Sim, cancelar")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { pedidoParaCancelar = null }) {
-                    Text("Voltar")
-                }
-            }
-        )
-    }
 }
 
-// Card de um único pedido: categoria + estado, localização, descrição, data e ação de cancelar.
+// Diálogo de confirmação partilhado (ListaPedidosScreen e DetalhePedidoScreen) antes de cancelar
+// um pedido — evita cancelamentos acidentais ao tocar sem querer no botão.
+@Composable
+fun ConfirmarCancelamentoDialog(
+    pedido: Pedido?,
+    onConfirmar: (Pedido) -> Unit,
+    onDismiss: () -> Unit
+) {
+    if (pedido == null) return
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Cancelar pedido") },
+        text = { Text("Tens a certeza que queres cancelar este pedido?") },
+        confirmButton = {
+            TextButton(onClick = { onConfirmar(pedido) }) {
+                Text("Sim, cancelar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Voltar")
+            }
+        }
+    )
+}
+
+// Card de um único pedido: categoria + estado, localização, descrição e data.
+// Tocar no card abre o DetalhePedidoScreen — é lá que se pode cancelar.
 @Composable
 private fun PedidoItem(
     pedido: Pedido,
     nomeCategoria: String,
-    onCancelar: () -> Unit
+    onAbrirDetalhe: () -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        onClick = onAbrirDetalhe,
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -141,23 +137,17 @@ private fun PedidoItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
-            // Cancelar só é permitido enquanto o pedido não estiver concluído (ver PedidoRepository.cancelar).
-            if (pedido.estado != EstadoPedido.CONCLUIDO) {
-                TextButton(onClick = onCancelar) {
-                    Text("Cancelar pedido")
-                }
-            }
         }
     }
 }
 
 // --- Helpers de apresentação (categoria por id, labels e cores de estado, formatação de data) ---
+// Não são "private": também usados pelo DetalhePedidoScreen, no mesmo package.
 
-private fun List<Categoria>.nomeDaCategoria(categoriaId: Long): String =
+fun List<Categoria>.nomeDaCategoria(categoriaId: Long): String =
     firstOrNull { it.id == categoriaId }?.nome ?: "Categoria desconhecida"
 
-private fun labelEstado(estado: EstadoPedido): String = when (estado) {
+fun labelEstado(estado: EstadoPedido): String = when (estado) {
     EstadoPedido.SUBMETIDO -> "Submetido"
     EstadoPedido.EM_ANALISE -> "Em análise"
     EstadoPedido.CONCLUIDO -> "Concluído"
@@ -165,12 +155,12 @@ private fun labelEstado(estado: EstadoPedido): String = when (estado) {
 }
 
 @Composable
-private fun corEstado(estado: EstadoPedido) = when (estado) {
+fun corEstado(estado: EstadoPedido) = when (estado) {
     EstadoPedido.SUBMETIDO -> MaterialTheme.colorScheme.primary
     EstadoPedido.EM_ANALISE -> MaterialTheme.colorScheme.tertiary
     EstadoPedido.CONCLUIDO -> MaterialTheme.colorScheme.secondary
     EstadoPedido.REJEITADO -> MaterialTheme.colorScheme.error
 }
 
-private fun formatarData(timestamp: Long): String =
+fun formatarData(timestamp: Long): String =
     SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(timestamp)
