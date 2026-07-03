@@ -26,6 +26,8 @@ import com.example.campusgo.data.PedidoRepository
 import com.example.campusgo.data.SessionManager
 import com.example.campusgo.data.UtilizadorRepository
 import com.example.campusgo.data.model.TipoPerfil
+import com.example.campusgo.ui.admin.AdminCategoriasScreen
+import com.example.campusgo.ui.admin.AdminCategoriasViewModelFactory
 import com.example.campusgo.ui.admin.AdminDetalhePedidoScreen
 import com.example.campusgo.ui.admin.AdminPedidosScreen
 import com.example.campusgo.ui.admin.AdminViewModelFactory
@@ -52,6 +54,7 @@ private const val ROTA_DETALHE_PEDIDO_BASE = "utilizador/pedido/detalhe"
 private const val ARG_PEDIDO_ID = "pedidoId"
 private const val ROTA_ADMIN_LISTA_PEDIDOS = "admin/pedido/lista"
 private const val ROTA_ADMIN_DETALHE_PEDIDO_BASE = "admin/pedido/detalhe"
+private const val ROTA_ADMIN_CATEGORIAS = "admin/categorias"
 
 // Grafo de navegação único da app. O controlo de acesso por perfil é estrutural:
 // cada perfil tem o seu próprio grafo aninhado (GRAFO_ADMIN / GRAFO_UTILIZADOR) e as
@@ -113,7 +116,16 @@ fun AppNavGraph(
                     onCriarPedido = null,
                     onVerPedidos = { navController.navigate(ROTA_ADMIN_LISTA_PEDIDOS) },
                     labelVerPedidos = "Ver todos os pedidos",
+                    onGerirCategorias = { navController.navigate(ROTA_ADMIN_CATEGORIAS) },
                     onLogout = ::terminarSessao
+                )
+            }
+            composable(ROTA_ADMIN_CATEGORIAS) {
+                AdminCategoriasScreen(
+                    viewModel = viewModel(
+                        factory = AdminCategoriasViewModelFactory(categoriaRepository, pedidoRepository)
+                    ),
+                    onVoltar = { navController.popBackStack() }
                 )
             }
             composable(ROTA_ADMIN_LISTA_PEDIDOS) {
@@ -153,6 +165,7 @@ fun AppNavGraph(
                     onCriarPedido = { navController.navigate(ROTA_CRIAR_PEDIDO) },
                     onVerPedidos = { navController.navigate(ROTA_LISTA_PEDIDOS) },
                     labelVerPedidos = "Os meus pedidos",
+                    onGerirCategorias = null,
                     onLogout = ::terminarSessao
                 )
             }
@@ -224,6 +237,7 @@ private fun HomePlaceholderScreen(
     onCriarPedido: (() -> Unit)?,
     onVerPedidos: (() -> Unit)?,
     labelVerPedidos: String = "Ver pedidos",
+    onGerirCategorias: (() -> Unit)?,
     onLogout: () -> Unit
 ) {
     Column(
@@ -244,6 +258,12 @@ private fun HomePlaceholderScreen(
         if (onVerPedidos != null) {
             Button(onClick = onVerPedidos) {
                 Text(labelVerPedidos)
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+        if (onGerirCategorias != null) {
+            Button(onClick = onGerirCategorias) {
+                Text("Gerir categorias")
             }
             Spacer(Modifier.height(8.dp))
         }

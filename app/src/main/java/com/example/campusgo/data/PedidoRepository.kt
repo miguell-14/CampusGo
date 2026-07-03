@@ -56,4 +56,8 @@ class PedidoRepository(private val pedidoDao: PedidoDao) {
     suspend fun eliminar(pedido: Pedido) {
         pedidoDao.remover(pedido)
     }
+
+    // Quantos pedidos usam esta categoria — usado para bloquear a eliminação de categorias em uso
+    // (decisão 3 do NOTAS.md), sem essa regra ter de viver dentro do CategoriaRepository.
+    suspend fun contarPorCategoria(categoriaId: Long): Int = pedidoDao.contarPorCategoria(categoriaId)
 }
