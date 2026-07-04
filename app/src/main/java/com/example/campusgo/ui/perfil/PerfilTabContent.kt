@@ -45,9 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.campusgo.util.PhotoUtils
 
-// Conteúdo do separador "Perfil": foto de perfil (círculo, tocável para escolher câmara/galeria),
-// nome e email por baixo, tudo centrado; "Editar perfil" e "Terminar sessão" mais abaixo.
-// Por agora só usado na home do Utilizador — o Admin ainda não foi migrado para separadores.
+// Conteúdo do separador "Perfil", partilhado pela home do Utilizador e a do Admin: foto de perfil
+// (círculo, tocável para escolher câmara/galeria/remover), nome e email por baixo, tudo centrado;
+// "Editar perfil" e "Terminar sessão" mais abaixo.
 @Composable
 fun PerfilTabContent(
     modifier: Modifier = Modifier,

@@ -27,19 +27,18 @@ import androidx.compose.ui.unit.dp
 import com.example.campusgo.data.model.EstadoPedido
 import com.example.campusgo.data.model.Pedido
 import com.example.campusgo.data.model.Utilizador
-import com.example.campusgo.ui.components.EcraComTopBar
 import com.example.campusgo.ui.pedido.corEstado
 import com.example.campusgo.ui.pedido.formatarData
 import com.example.campusgo.ui.pedido.labelEstado
 import com.example.campusgo.ui.pedido.nomeDaCategoria
 
-// Ecrã do Admin: lista todos os pedidos de todos os utilizadores, com filtro por estado.
-// Tocar num pedido abre o AdminDetalhePedidoScreen — é lá que se altera o estado e se elimina,
-// depois de ver o pedido completo (incluindo a fotografia).
+// Conteúdo do separador "Pedidos" da home do Admin: lista todos os pedidos de todos os
+// utilizadores, com filtro por estado. Tocar num pedido abre o AdminDetalhePedidoScreen — é lá
+// que se altera o estado e se elimina, depois de ver o pedido completo (incluindo a fotografia).
 @Composable
-fun AdminPedidosScreen(
+fun AdminPedidosContent(
+    modifier: Modifier = Modifier,
     viewModel: AdminViewModel,
-    onVoltar: () -> Unit,
     onAbrirDetalhe: (Long) -> Unit
 ) {
     val pedidos by viewModel.pedidos.collectAsState()
@@ -54,51 +53,49 @@ fun AdminPedidosScreen(
         pedidos.filter { it.estado == filtroEstado }
     }
 
-    EcraComTopBar(titulo = "Todos os pedidos", onVoltar = onVoltar) { modifierConteudo ->
-        Column(
-            modifier = modifierConteudo
-                .fillMaxSize()
-                .padding(24.dp)
-        ) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                item {
-                    FilterChip(
-                        selected = filtroEstado == null,
-                        onClick = { filtroEstado = null },
-                        label = { Text("Todos") }
-                    )
-                }
-                items(EstadoPedido.entries.toList()) { estado ->
-                    FilterChip(
-                        selected = filtroEstado == estado,
-                        onClick = { filtroEstado = estado },
-                        label = { Text(labelEstado(estado)) }
-                    )
-                }
-            }
-            Spacer(Modifier.height(16.dp))
-
-            if (pedidosFiltrados.isEmpty()) {
-                Text(
-                    text = if (pedidos.isEmpty()) {
-                        "Ainda não há pedidos submetidos."
-                    } else {
-                        "Não há pedidos com o estado selecionado."
-                    },
-                    style = MaterialTheme.typography.bodyMedium
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp)
+    ) {
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            item {
+                FilterChip(
+                    selected = filtroEstado == null,
+                    onClick = { filtroEstado = null },
+                    label = { Text("Todos") }
                 )
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(pedidosFiltrados, key = { it.id }) { pedido ->
-                        PedidoAdminItem(
-                            pedido = pedido,
-                            nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
-                            nomeUtilizador = utilizadores.nomeDoUtilizador(pedido.utilizadorId),
-                            onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
-                        )
-                    }
+            }
+            items(EstadoPedido.entries.toList()) { estado ->
+                FilterChip(
+                    selected = filtroEstado == estado,
+                    onClick = { filtroEstado = estado },
+                    label = { Text(labelEstado(estado)) }
+                )
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+
+        if (pedidosFiltrados.isEmpty()) {
+            Text(
+                text = if (pedidos.isEmpty()) {
+                    "Ainda não há pedidos submetidos."
+                } else {
+                    "Não há pedidos com o estado selecionado."
+                },
+                style = MaterialTheme.typography.bodyMedium
+            )
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(pedidosFiltrados, key = { it.id }) { pedido ->
+                    PedidoAdminItem(
+                        pedido = pedido,
+                        nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
+                        nomeUtilizador = utilizadores.nomeDoUtilizador(pedido.utilizadorId),
+                        onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
+                    )
                 }
             }
         }

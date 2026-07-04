@@ -1,18 +1,6 @@
 package com.example.campusgo.ui.nav
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -26,10 +14,9 @@ import com.example.campusgo.data.PedidoRepository
 import com.example.campusgo.data.SessionManager
 import com.example.campusgo.data.UtilizadorRepository
 import com.example.campusgo.data.model.TipoPerfil
-import com.example.campusgo.ui.admin.AdminCategoriasScreen
 import com.example.campusgo.ui.admin.AdminCategoriasViewModelFactory
 import com.example.campusgo.ui.admin.AdminDetalhePedidoScreen
-import com.example.campusgo.ui.admin.AdminPedidosScreen
+import com.example.campusgo.ui.admin.AdminHomeScreen
 import com.example.campusgo.ui.admin.AdminViewModelFactory
 import com.example.campusgo.ui.auth.AuthViewModelFactory
 import com.example.campusgo.ui.auth.LoginScreen
@@ -49,9 +36,7 @@ private const val ROTA_ADMIN_HOME = "admin/home"
 private const val ROTA_UTILIZADOR_HOME = "utilizador/home"
 private const val ROTA_DETALHE_PEDIDO_BASE = "utilizador/pedido/detalhe"
 private const val ARG_PEDIDO_ID = "pedidoId"
-private const val ROTA_ADMIN_LISTA_PEDIDOS = "admin/pedido/lista"
 private const val ROTA_ADMIN_DETALHE_PEDIDO_BASE = "admin/pedido/detalhe"
-private const val ROTA_ADMIN_CATEGORIAS = "admin/categorias"
 
 // Grafo de navegação único da app. O controlo de acesso por perfil é estrutural:
 // cada perfil tem o seu próprio grafo aninhado (GRAFO_ADMIN / GRAFO_UTILIZADOR) e as
@@ -103,38 +88,29 @@ fun AppNavGraph(
             )
         }
 
-        // Grafo exclusivo do Administrador — rotas de gestão de pedidos/categorias
-        // entram aqui nos próximos dias e nunca ficam alcançáveis a partir do grafo do utilizador.
+        // Grafo exclusivo do Administrador — home com separadores (Categorias/Pedidos/Perfil) +
+        // ecrãs empurrados a partir dela (detalhe do pedido, editar perfil).
         navigation(startDestination = ROTA_ADMIN_HOME, route = GRAFO_ADMIN) {
             composable(ROTA_ADMIN_HOME) {
-                HomePlaceholderScreen(
-                    titulo = "Área de Administrador",
-                    onEditarPerfil = { navController.navigate(ROTA_EDITAR_PERFIL) },
-                    onCriarPedido = null,
-                    onVerPedidos = { navController.navigate(ROTA_ADMIN_LISTA_PEDIDOS) },
-                    labelVerPedidos = "Ver todos os pedidos",
-                    onGerirCategorias = { navController.navigate(ROTA_ADMIN_CATEGORIAS) },
-                    onLogout = ::terminarSessao
-                )
-            }
-            composable(ROTA_ADMIN_CATEGORIAS) {
-                AdminCategoriasScreen(
-                    viewModel = viewModel(
-                        factory = AdminCategoriasViewModelFactory(categoriaRepository, pedidoRepository)
-                    ),
-                    onVoltar = { navController.popBackStack() }
-                )
-            }
-            composable(ROTA_ADMIN_LISTA_PEDIDOS) {
-                AdminPedidosScreen(
-                    viewModel = viewModel(
-                        factory = AdminViewModelFactory(pedidoRepository, categoriaRepository, repository)
-                    ),
-                    onVoltar = { navController.popBackStack() },
-                    onAbrirDetalhe = { pedidoId ->
-                        navController.navigate("$ROTA_ADMIN_DETALHE_PEDIDO_BASE/$pedidoId")
-                    }
-                )
+                val utilizadorId = sessionManager.getUtilizadorId()
+                if (utilizadorId != null) {
+                    AdminHomeScreen(
+                        adminViewModel = viewModel(
+                            factory = AdminViewModelFactory(pedidoRepository, categoriaRepository, repository)
+                        ),
+                        adminCategoriasViewModel = viewModel(
+                            factory = AdminCategoriasViewModelFactory(categoriaRepository, pedidoRepository)
+                        ),
+                        perfilViewModel = viewModel(
+                            factory = PerfilViewModelFactory(repository, utilizadorId)
+                        ),
+                        onAbrirDetalhe = { pedidoId ->
+                            navController.navigate("$ROTA_ADMIN_DETALHE_PEDIDO_BASE/$pedidoId")
+                        },
+                        onEditarPerfil = { navController.navigate(ROTA_EDITAR_PERFIL) },
+                        onLogout = ::terminarSessao
+                    )
+                }
             }
             composable(
                 route = "$ROTA_ADMIN_DETALHE_PEDIDO_BASE/{$ARG_PEDIDO_ID}",
@@ -201,57 +177,6 @@ fun AppNavGraph(
                     onVoltar = { navController.popBackStack() }
                 )
             }
-        }
-    }
-}
-
-/**
- * Ecrã temporário só para validar o fluxo de login/registo/sessão/routing por perfil.
- * Será substituído pelos ecrãs reais de pedidos (utilizador) e gestão (admin).
- */
-@Composable
-private fun HomePlaceholderScreen(
-    titulo: String,
-    onEditarPerfil: () -> Unit,
-    onCriarPedido: (() -> Unit)?,
-    onVerPedidos: (() -> Unit)?,
-    labelVerPedidos: String = "Ver pedidos",
-    onGerirCategorias: (() -> Unit)?,
-    onLogout: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = titulo, style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(24.dp))
-        if (onCriarPedido != null) {
-            Button(onClick = onCriarPedido) {
-                Text("Criar pedido")
-            }
-            Spacer(Modifier.height(8.dp))
-        }
-        if (onVerPedidos != null) {
-            Button(onClick = onVerPedidos) {
-                Text(labelVerPedidos)
-            }
-            Spacer(Modifier.height(8.dp))
-        }
-        if (onGerirCategorias != null) {
-            Button(onClick = onGerirCategorias) {
-                Text("Gerir categorias")
-            }
-            Spacer(Modifier.height(8.dp))
-        }
-        Button(onClick = onEditarPerfil) {
-            Text("Editar perfil")
-        }
-        Spacer(Modifier.height(8.dp))
-        Button(onClick = onLogout) {
-            Text("Terminar sessão")
         }
     }
 }
