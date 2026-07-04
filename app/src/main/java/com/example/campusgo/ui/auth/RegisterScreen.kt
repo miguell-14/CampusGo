@@ -1,12 +1,15 @@
 package com.example.campusgo.ui.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -29,8 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.campusgo.R
 import com.example.campusgo.data.model.TipoPerfil
 import com.example.campusgo.util.isEmailValido
 
@@ -53,16 +60,30 @@ fun RegisterScreen(
         if (uiState.isLoggedIn) onRegisterSuccess()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(text = "Criar conta", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(24.dp))
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Mesmo fundo subtil do LoginScreen — só decorativo, não interfere na legibilidade.
+        Image(
+            painter = painterResource(R.drawable.login_background),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(0.3f),
+            contentScale = ContentScale.Crop
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                // Sem isto, o teclado tapava o formulário em vez de o ecrã se ajustar —
+                // imePadding reage à altura do teclado, verticalScroll deixa subir o resto.
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = "Criar conta", style = MaterialTheme.typography.headlineMedium)
+            Spacer(Modifier.height(24.dp))
 
         OutlinedTextField(
             value = nome,
@@ -152,6 +173,7 @@ fun RegisterScreen(
         ) {
             Text("Já tens conta? Inicia sessão")
         }
+    }
     }
 }
 

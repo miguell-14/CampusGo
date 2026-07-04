@@ -4,6 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import com.example.campusgo.data.AppDatabase
 import com.example.campusgo.data.CategoriaRepository
 import com.example.campusgo.data.PedidoRepository
@@ -28,16 +32,21 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CampusGoTheme {
-                // Sem Scaffold aqui: cada ecrã já gere o seu próprio (EcraComTopBar,
-                // UtilizadorHomeScreen, AdminHomeScreen) — um Scaffold exterior duplicava os
-                // insets do sistema (barra de navegação/gestos), fazendo a NavigationBar parecer
-                // maior do que devia.
-                AppNavGraph(
-                    repository = utilizadorRepository,
-                    pedidoRepository = pedidoRepository,
-                    categoriaRepository = categoriaRepository,
-                    sessionManager = sessionManager
-                )
+                // Surface simples (não Scaffold) só para pintar o fundo do tema atrás de tudo —
+                // sem isto, ecrãs sem o seu próprio Scaffold (Login/Registo) ficavam com o branco
+                // por omissão da janela, que destoava do fundo branco do logótipo. Um Scaffold
+                // aqui voltaria a duplicar os insets do sistema (ver histórico da NavigationBar).
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppNavGraph(
+                        repository = utilizadorRepository,
+                        pedidoRepository = pedidoRepository,
+                        categoriaRepository = categoriaRepository,
+                        sessionManager = sessionManager
+                    )
+                }
             }
         }
     }

@@ -21,7 +21,20 @@ private val DarkColorScheme = darkColorScheme(
     onSecondaryContainer = BlueOnSecondaryContainerDark,
     tertiary = AmberTertiaryDark,
     tertiaryContainer = AmberTertiaryContainerDark,
-    onTertiaryContainer = AmberOnTertiaryContainerDark
+    onTertiaryContainer = AmberOnTertiaryContainerDark,
+    background = SurfaceDarkNeutral,
+    onBackground = OnSurfaceDarkNeutral,
+    surface = SurfaceDarkNeutral,
+    onSurface = OnSurfaceDarkNeutral,
+    surfaceVariant = SurfaceVariantDark,
+    onSurfaceVariant = OnSurfaceVariantDark,
+    surfaceContainerLowest = SurfaceContainerLowestDark,
+    surfaceContainerLow = SurfaceContainerLowDark,
+    surfaceContainer = SurfaceContainerDark,
+    surfaceContainerHigh = SurfaceContainerHighDark,
+    surfaceContainerHighest = SurfaceContainerHighestDark,
+    outline = OutlineDark,
+    outlineVariant = OutlineVariantDark
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -34,7 +47,24 @@ private val LightColorScheme = lightColorScheme(
     onSecondaryContainer = BlueOnSecondaryContainerLight,
     tertiary = AmberTertiaryLight,
     tertiaryContainer = AmberTertiaryContainerLight,
-    onTertiaryContainer = AmberOnTertiaryContainerLight
+    onTertiaryContainer = AmberOnTertiaryContainerLight,
+    // Branco puro — sem isto, o Material3 usa um branco com leve tom arroxeado da paleta base,
+    // que destoava do fundo já branco do logótipo (dava para ver a borda do PNG no Login).
+    background = BackgroundLight,
+    onBackground = OnBackgroundLight,
+    surface = BackgroundLight,
+    onSurface = OnBackgroundLight,
+    // Card e NavigationBar usam estas cores "surfaceContainer*" por omissão (não background/
+    // surface) — sem as definir, continuavam com um tom arroxeado da paleta base do Material3.
+    surfaceVariant = SurfaceVariantLight,
+    onSurfaceVariant = OnSurfaceVariantLight,
+    surfaceContainerLowest = SurfaceContainerLowestLight,
+    surfaceContainerLow = SurfaceContainerLowLight,
+    surfaceContainer = SurfaceContainerLight,
+    surfaceContainerHigh = SurfaceContainerHighLight,
+    surfaceContainerHighest = SurfaceContainerHighestLight,
+    outline = OutlineLight,
+    outlineVariant = OutlineVariantLight
 )
 
 @Composable
