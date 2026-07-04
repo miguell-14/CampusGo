@@ -4,11 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
 import com.example.campusgo.data.AppDatabase
 import com.example.campusgo.data.CategoriaRepository
 import com.example.campusgo.data.PedidoRepository
@@ -33,16 +28,16 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CampusGoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding)) {
-                        AppNavGraph(
-                            repository = utilizadorRepository,
-                            pedidoRepository = pedidoRepository,
-                            categoriaRepository = categoriaRepository,
-                            sessionManager = sessionManager
-                        )
-                    }
-                }
+                // Sem Scaffold aqui: cada ecrã já gere o seu próprio (EcraComTopBar,
+                // UtilizadorHomeScreen, AdminHomeScreen) — um Scaffold exterior duplicava os
+                // insets do sistema (barra de navegação/gestos), fazendo a NavigationBar parecer
+                // maior do que devia.
+                AppNavGraph(
+                    repository = utilizadorRepository,
+                    pedidoRepository = pedidoRepository,
+                    categoriaRepository = categoriaRepository,
+                    sessionManager = sessionManager
+                )
             }
         }
     }

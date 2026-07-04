@@ -5,14 +5,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,15 +42,26 @@ fun AdminHomeScreen(
     onLogout: () -> Unit
 ) {
     var tabSelecionado by rememberSaveable { mutableIntStateOf(TAB_PEDIDOS) }
+    val utilizador by perfilViewModel.utilizador.collectAsState()
 
     val titulo = when (tabSelecionado) {
         TAB_CATEGORIAS -> "Categorias"
-        TAB_PEDIDOS -> "Todos os pedidos"
         else -> "Perfil"
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(titulo) }) },
+        topBar = {
+            // No separador "Pedidos" não há TopAppBar — o "Olá" no conteúdo já faz esse papel.
+            if (tabSelecionado != TAB_PEDIDOS) {
+                CenterAlignedTopAppBar(
+                    title = { Text(titulo) },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+            }
+        },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
@@ -80,6 +94,7 @@ fun AdminHomeScreen(
             TAB_PEDIDOS -> AdminPedidosContent(
                 modifier = modifierConteudo,
                 viewModel = adminViewModel,
+                nomeAdmin = utilizador?.nome.orEmpty(),
                 onAbrirDetalhe = onAbrirDetalhe
             )
             else -> PerfilTabContent(

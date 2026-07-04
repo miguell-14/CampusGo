@@ -53,6 +53,7 @@ import com.example.campusgo.util.PhotoUtils
 fun CriarPedidoContent(
     modifier: Modifier = Modifier,
     viewModel: PedidoViewModel,
+    nomeUtilizador: String,
     onPedidoCriado: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -124,8 +125,18 @@ fun CriarPedidoContent(
         modifier = modifier
             .fillMaxSize()
             .padding(24.dp),
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.Center
     ) {
+        // Cabeçalho da página: saudação seguida do título — sem TopAppBar neste separador. O
+        // grupo tod (saudação + formulário) fica centrado verticalmente no ecrã.
+        Text(text = "Olá, $nomeUtilizador", style = MaterialTheme.typography.headlineLarge)
+        Text(
+            text = "Criar pedido",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(32.dp))
+
         // Dropdown de seleção de categoria (lista vem do CategoriaRepository via ViewModel).
         ExposedDropdownMenuBox(
             expanded = dropdownAberto,

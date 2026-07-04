@@ -39,6 +39,7 @@ import com.example.campusgo.ui.pedido.nomeDaCategoria
 fun AdminPedidosContent(
     modifier: Modifier = Modifier,
     viewModel: AdminViewModel,
+    nomeAdmin: String,
     onAbrirDetalhe: (Long) -> Unit
 ) {
     val pedidos by viewModel.pedidos.collectAsState()
@@ -53,50 +54,93 @@ fun AdminPedidosContent(
         pedidos.filter { it.estado == filtroEstado }
     }
 
-    Column(
+    // Um único LazyColumn (cabeçalho e filtros incluídos como itens) para a saudação deslizar
+    // junto com a lista, em vez de ficar fixa a ocupar espaço quando há muitos pedidos.
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        item {
+            Column {
+                Spacer(Modifier.height(24.dp))
+                Text(text = "Olá, $nomeAdmin", style = MaterialTheme.typography.headlineLarge)
+                Text(
+                    text = "Todos os pedidos",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(16.dp))
+                EstatisticasPedidos(pedidos)
+                Spacer(Modifier.height(4.dp))
+            }
+        }
+
+        item {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    FilterChip(
+                        selected = filtroEstado == null,
+                        onClick = { filtroEstado = null },
+                        label = { Text("Todos") }
+                    )
+                }
+                items(EstadoPedido.entries.toList()) { estado ->
+                    FilterChip(
+                        selected = filtroEstado == estado,
+                        onClick = { filtroEstado = estado },
+                        label = { Text(labelEstado(estado)) }
+                    )
+                }
+            }
+        }
+
+        if (pedidosFiltrados.isEmpty()) {
             item {
-                FilterChip(
-                    selected = filtroEstado == null,
-                    onClick = { filtroEstado = null },
-                    label = { Text("Todos") }
+                Text(
+                    text = if (pedidos.isEmpty()) {
+                        "Ainda não há pedidos submetidos."
+                    } else {
+                        "Não há pedidos com o estado selecionado."
+                    },
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
-            items(EstadoPedido.entries.toList()) { estado ->
-                FilterChip(
-                    selected = filtroEstado == estado,
-                    onClick = { filtroEstado = estado },
-                    label = { Text(labelEstado(estado)) }
+        } else {
+            items(pedidosFiltrados, key = { it.id }) { pedido ->
+                PedidoAdminItem(
+                    pedido = pedido,
+                    nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
+                    nomeUtilizador = utilizadores.nomeDoUtilizador(pedido.utilizadorId),
+                    onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
                 )
             }
         }
-        Spacer(Modifier.height(16.dp))
+    }
+}
 
-        if (pedidosFiltrados.isEmpty()) {
-            Text(
-                text = if (pedidos.isEmpty()) {
-                    "Ainda não há pedidos submetidos."
-                } else {
-                    "Não há pedidos com o estado selecionado."
-                },
-                style = MaterialTheme.typography.bodyMedium
-            )
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(pedidosFiltrados, key = { it.id }) { pedido ->
-                    PedidoAdminItem(
-                        pedido = pedido,
-                        nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
-                        nomeUtilizador = utilizadores.nomeDoUtilizador(pedido.utilizadorId),
-                        onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
-                    )
-                }
+// Estatísticas simples (valorização do enunciado): contagem de pedidos por estado, sobre a lista
+// já carregada — sem query nova. Cor de cada número igual à do estado (ver corEstado).
+@Composable
+private fun EstatisticasPedidos(pedidos: List<Pedido>) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        EstadoPedido.entries.forEach { estado ->
+            val quantidade = pedidos.count { it.estado == estado }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = quantidade.toString(),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = corEstado(estado)
+                )
+                Text(
+                    text = labelEstado(estado),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }

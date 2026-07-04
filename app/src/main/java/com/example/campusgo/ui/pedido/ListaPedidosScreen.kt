@@ -28,10 +28,11 @@ import com.example.campusgo.data.model.Pedido
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-// Conteúdo do separador "Os meus pedidos" da home do Utilizador. Sem filtro por estado (poucos
-// pedidos por utilizador não justifica) — em vez disso, ordenação fixa: pendentes (Submetido/Em
-// análise) sempre no topo, resolvidos (Concluído/Rejeitado) no fim e visualmente esbatidos, para
-// se notarem como arquivo/histórico. Cancelar só é feito a partir do DetalhePedidoScreen.
+// Conteúdo do separador "Os meus pedidos" da home do Utilizador (com TopAppBar própria — ver
+// UtilizadorHomeScreen). Sem filtro por estado (poucos pedidos por utilizador não justifica) —
+// em vez disso, ordenação fixa: pendentes (Submetido/Em análise) sempre no topo, resolvidos
+// (Concluído/Rejeitado) no fim e visualmente esbatidos, para se notarem como arquivo/histórico.
+// Cancelar só é feito a partir do DetalhePedidoScreen.
 @Composable
 fun ListaPedidosContent(
     modifier: Modifier = Modifier,
