@@ -32,8 +32,9 @@ fun EditarPerfilScreen(
     onVoltar: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var nome by remember(uiState.nome) { mutableStateOf(uiState.nome) }
-    var email by remember(uiState.email) { mutableStateOf(uiState.email) }
+    val utilizador by viewModel.utilizador.collectAsState()
+    var nome by remember(utilizador?.nome) { mutableStateOf(utilizador?.nome.orEmpty()) }
+    var email by remember(utilizador?.email) { mutableStateOf(utilizador?.email.orEmpty()) }
     var novaPassword by remember { mutableStateOf("") }
     var confirmarNovaPassword by remember { mutableStateOf("") }
     var validationError by remember { mutableStateOf<String?>(null) }

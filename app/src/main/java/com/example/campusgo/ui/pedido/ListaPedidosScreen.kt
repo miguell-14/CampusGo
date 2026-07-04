@@ -20,48 +20,53 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.example.campusgo.data.model.Categoria
 import com.example.campusgo.data.model.EstadoPedido
 import com.example.campusgo.data.model.Pedido
-import com.example.campusgo.ui.components.EcraComTopBar
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-// Ecrã do Utilizador: lista os seus próprios pedidos com estado visível.
-// Cancelar só é feito a partir do DetalhePedidoScreen (aberto ao tocar num pedido).
+// Conteúdo do separador "Os meus pedidos" da home do Utilizador. Sem filtro por estado (poucos
+// pedidos por utilizador não justifica) — em vez disso, ordenação fixa: pendentes (Submetido/Em
+// análise) sempre no topo, resolvidos (Concluído/Rejeitado) no fim e visualmente esbatidos, para
+// se notarem como arquivo/histórico. Cancelar só é feito a partir do DetalhePedidoScreen.
 @Composable
-fun ListaPedidosScreen(
+fun ListaPedidosContent(
+    modifier: Modifier = Modifier,
     viewModel: PedidoViewModel,
-    onVoltar: () -> Unit,
     onAbrirDetalhe: (Long) -> Unit
 ) {
     val pedidos by viewModel.pedidos.collectAsState()
     val categorias by viewModel.categorias.collectAsState()
 
-    EcraComTopBar(titulo = "Os meus pedidos", onVoltar = onVoltar) { modifierConteudo ->
-        Column(
-            modifier = modifierConteudo
-                .fillMaxSize()
-                .padding(24.dp)
-        ) {
-            // Estado vazio vs. lista de pedidos (cada item é um Card, ver PedidoItem abaixo).
-            if (pedidos.isEmpty()) {
-                Text(
-                    text = "Ainda não tens pedidos submetidos.",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(pedidos, key = { it.id }) { pedido ->
-                        PedidoItem(
-                            pedido = pedido,
-                            nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
-                            onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
-                        )
-                    }
+    val (pendentes, resolvidos) = pedidos.partition {
+        it.estado == EstadoPedido.SUBMETIDO || it.estado == EstadoPedido.EM_ANALISE
+    }
+    val pedidosOrdenados = pendentes + resolvidos
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp)
+    ) {
+        // Estado vazio vs. lista de pedidos (cada item é um Card, ver PedidoItem abaixo).
+        if (pedidosOrdenados.isEmpty()) {
+            Text(
+                text = "Ainda não tens pedidos submetidos.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(pedidosOrdenados, key = { it.id }) { pedido ->
+                    PedidoItem(
+                        pedido = pedido,
+                        nomeCategoria = categorias.nomeDaCategoria(pedido.categoriaId),
+                        onAbrirDetalhe = { onAbrirDetalhe(pedido.id) }
+                    )
                 }
             }
         }
@@ -102,9 +107,18 @@ private fun PedidoItem(
     nomeCategoria: String,
     onAbrirDetalhe: () -> Unit
 ) {
+    // Pedidos já resolvidos (Concluído/Rejeitado) aparecem esbatidos — leem-se como histórico.
+    val opacidade = if (pedido.estado == EstadoPedido.CONCLUIDO || pedido.estado == EstadoPedido.REJEITADO) {
+        0.6f
+    } else {
+        1f
+    }
+
     Card(
         onClick = onAbrirDetalhe,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(opacidade)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(

@@ -11,5 +11,6 @@ data class Utilizador(
     val nome: String,
     val email: String,
     val passwordHash: String,
-    val tipoPerfil: TipoPerfil
+    val tipoPerfil: TipoPerfil,
+    val fotoPerfilPath: String? = null
 )

@@ -38,10 +38,12 @@ class PedidoRepository(private val pedidoDao: PedidoDao) {
     // Pedido individual por id — para o futuro DetalhePedidoScreen.
     suspend fun getById(id: Long): Pedido? = pedidoDao.getById(id)
 
-    // Cancela (remove) um pedido, exceto se já estiver CONCLUIDO — decisão de negócio explícita.
+    // Cancela (remove) um pedido — só permitido enquanto ainda está SUBMETIDO (por analisar).
+    // Depois de entrar em análise (ou ser concluído/rejeitado), já não pode ser cancelado pelo
+    // utilizador sozinho.
     suspend fun cancelar(pedido: Pedido): Result<Unit> {
-        if (pedido.estado == EstadoPedido.CONCLUIDO) {
-            return Result.failure(IllegalStateException("Não é possível cancelar um pedido já concluído"))
+        if (pedido.estado != EstadoPedido.SUBMETIDO) {
+            return Result.failure(IllegalStateException("Só é possível cancelar pedidos ainda submetidos (por analisar)"))
         }
         pedidoDao.remover(pedido)
         return Result.success(Unit)

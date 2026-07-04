@@ -40,6 +40,9 @@ class UtilizadorRepository(private val utilizadorDao: UtilizadorDao) {
 
     suspend fun getById(id: Long): Utilizador? = utilizadorDao.getById(id)
 
+    // Versão reativa de getById, usada no separador "Perfil" da home.
+    fun observarUtilizador(id: Long): Flow<Utilizador?> = utilizadorDao.observarPorId(id)
+
     // Lista reativa de todos os utilizadores, usada no AdminPedidosScreen para mostrar quem fez cada pedido.
     fun getTodos(): Flow<List<Utilizador>> = utilizadorDao.getTodos()
 
@@ -69,6 +72,15 @@ class UtilizadorRepository(private val utilizadorDao: UtilizadorDao) {
             }
         )
         utilizadorDao.atualizar(atualizado)
+        return Result.success(Unit)
+    }
+
+    // Atualiza só a foto de perfil (câmara/galeria) — separado de atualizarPerfil porque não
+    // passa pelo formulário de editar perfil, é escolhida diretamente no separador "Perfil".
+    suspend fun atualizarFotoPerfil(utilizadorId: Long, fotoPerfilPath: String?): Result<Unit> {
+        val atual = utilizadorDao.getById(utilizadorId)
+            ?: return Result.failure(IllegalStateException("Utilizador não encontrado"))
+        utilizadorDao.atualizar(atual.copy(fotoPerfilPath = fotoPerfilPath))
         return Result.success(Unit)
     }
 }

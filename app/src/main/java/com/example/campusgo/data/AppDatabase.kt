@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.campusgo.data.dao.CategoriaDao
 import com.example.campusgo.data.dao.PedidoDao
@@ -17,7 +18,7 @@ import com.example.campusgo.data.model.Utilizador
 // Base de dados Room da app (SQLite local, sem backend) — entidades e versão do schema.
 @Database(
     entities = [Utilizador::class, Categoria::class, Pedido::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -41,6 +42,13 @@ abstract class AppDatabase : RoomDatabase() {
             "Informática" to "Problemas com equipamento ou rede informática"
         )
 
+        // v1 -> v2: foto de perfil do utilizador (círculo no separador "Perfil" da home).
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE utilizadores ADD COLUMN fotoPerfilPath TEXT")
+            }
+        }
+
         // Corre uma única vez, só quando o ficheiro da BD é criado pela primeira vez.
         private val seedCallback = object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
@@ -62,7 +70,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "campusgo.db"
-                ).addCallback(seedCallback).build().also { instance = it }
+                ).addMigrations(MIGRATION_1_2).addCallback(seedCallback).build().also { instance = it }
             }
         }
     }

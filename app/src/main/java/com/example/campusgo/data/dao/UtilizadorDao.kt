@@ -24,6 +24,11 @@ interface UtilizadorDao {
     @Query("SELECT * FROM utilizadores WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): Utilizador?
 
+    // Versão reativa de getById — usada no separador "Perfil" para refletir de imediato qualquer
+    // alteração (nome/email/foto), venha de onde vier (EditarPerfilScreen ou o próprio separador).
+    @Query("SELECT * FROM utilizadores WHERE id = :id LIMIT 1")
+    fun observarPorId(id: Long): Flow<Utilizador?>
+
     // Lista reativa de todos os utilizadores — usada pelo Admin para mostrar quem fez cada pedido.
     @Query("SELECT * FROM utilizadores")
     fun getTodos(): Flow<List<Utilizador>>

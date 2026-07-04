@@ -93,8 +93,9 @@ fun DetalhePedidoScreen(
                     Spacer(Modifier.height(8.dp))
                 }
 
-                // Cancelar só é permitido enquanto o pedido não estiver concluído.
-                if (pedido.estado != EstadoPedido.CONCLUIDO) {
+                // Cancelar só é permitido enquanto o pedido ainda está por analisar — depois de
+                // entrar em análise já não faz sentido o utilizador poder cancelar sozinho.
+                if (pedido.estado == EstadoPedido.SUBMETIDO) {
                     Button(
                         onClick = { pedidoParaCancelar = pedido },
                         modifier = Modifier.fillMaxWidth()

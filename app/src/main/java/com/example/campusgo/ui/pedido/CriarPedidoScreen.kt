@@ -39,22 +39,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.campusgo.data.model.Categoria
-import com.example.campusgo.ui.components.EcraComTopBar
 import com.example.campusgo.util.PhotoUtils
 
+// Conteúdo do separador "Criar pedido" da home do Utilizador (separador central, aberto por
+// omissão). Ao submeter com sucesso, o formulário limpa-se e fica-se no mesmo separador — quem
+// avisa que correu bem é o onPedidoCriado (a Home mostra uma Snackbar), não há navegação.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CriarPedidoScreen(
+fun CriarPedidoContent(
+    modifier: Modifier = Modifier,
     viewModel: PedidoViewModel,
-    onPedidoCriado: () -> Unit,
-    onVoltar: () -> Unit
+    onPedidoCriado: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val categorias by viewModel.categorias.collectAsState()
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     // Estado local do formulário (a UI é stateless em relação aos dados persistidos).
     var categoriaSelecionada by remember { mutableStateOf<Categoria?>(null) }
@@ -104,17 +108,20 @@ fun CriarPedidoScreen(
         }
     }
 
-    // Ao submeter com sucesso, limpa o estado e volta para trás (fecha o ecrã).
+    // Ao submeter com sucesso, limpa o formulário (fica-se no mesmo separador) e avisa a Home.
     LaunchedEffect(uiState.submitSucesso) {
         if (uiState.submitSucesso) {
+            categoriaSelecionada = null
+            localizacao = ""
+            descricao = ""
+            fotografiaPath = null
             viewModel.limparEstadoSubmissao()
             onPedidoCriado()
         }
     }
 
-    EcraComTopBar(titulo = "Criar pedido", onVoltar = onVoltar) { modifierConteudo ->
     Column(
-        modifier = modifierConteudo
+        modifier = modifier
             .fillMaxSize()
             .padding(24.dp),
         verticalArrangement = Arrangement.Top
@@ -218,6 +225,7 @@ fun CriarPedidoScreen(
         // Botão de submissão: valida localmente antes de chamar o ViewModel.
         Button(
             onClick = {
+                keyboardController?.hide()
                 validationError = validarPedido(categoriaSelecionada, localizacao, descricao)
                 val categoria = categoriaSelecionada
                 if (validationError == null && categoria != null) {
@@ -242,7 +250,6 @@ fun CriarPedidoScreen(
                 Text("Submeter pedido")
             }
         }
-    }
     }
 }
 
