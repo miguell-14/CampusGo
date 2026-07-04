@@ -2,11 +2,13 @@ package com.example.campusgo.ui.admin
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -18,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -43,6 +47,10 @@ fun AdminHomeScreen(
 ) {
     var tabSelecionado by rememberSaveable { mutableIntStateOf(TAB_PEDIDOS) }
     val utilizador by perfilViewModel.utilizador.collectAsState()
+
+    // Controla o diálogo de criar categoria, aberto pelo FAB — vive aqui porque o FAB é do
+    // Scaffold exterior, mas o diálogo em si é desenhado dentro do AdminCategoriasContent.
+    var mostrarCriarCategoria by remember { mutableStateOf(false) }
 
     val titulo = when (tabSelecionado) {
         TAB_CATEGORIAS -> "Categorias"
@@ -83,13 +91,23 @@ fun AdminHomeScreen(
                     label = { Text("Perfil") }
                 )
             }
+        },
+        floatingActionButton = {
+            // Só no separador "Categorias" — criar é a única ação que precisa de um FAB aqui.
+            if (tabSelecionado == TAB_CATEGORIAS) {
+                FloatingActionButton(onClick = { mostrarCriarCategoria = true }) {
+                    Icon(Icons.Filled.Add, contentDescription = "Criar categoria")
+                }
+            }
         }
     ) { paddingValues ->
         val modifierConteudo = Modifier.padding(paddingValues)
         when (tabSelecionado) {
             TAB_CATEGORIAS -> AdminCategoriasContent(
                 modifier = modifierConteudo,
-                viewModel = adminCategoriasViewModel
+                viewModel = adminCategoriasViewModel,
+                mostrarDialogoCriar = mostrarCriarCategoria,
+                onFecharDialogoCriar = { mostrarCriarCategoria = false }
             )
             TAB_PEDIDOS -> AdminPedidosContent(
                 modifier = modifierConteudo,

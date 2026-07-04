@@ -49,9 +49,14 @@ class PedidoRepository(private val pedidoDao: PedidoDao) {
         return Result.success(Unit)
     }
 
-    // Ação do Admin: muda o estado de um pedido (sem restrições — o Admin pode ir para qualquer estado).
-    suspend fun atualizarEstado(pedido: Pedido, novoEstado: EstadoPedido) {
+    // Ação do Admin: muda o estado de um pedido. CONCLUIDO e REJEITADO são estados finais — depois
+    // de lá chegar, já não é possível voltar atrás nem mudar para outro estado.
+    suspend fun atualizarEstado(pedido: Pedido, novoEstado: EstadoPedido): Result<Unit> {
+        if (pedido.estado == EstadoPedido.CONCLUIDO || pedido.estado == EstadoPedido.REJEITADO) {
+            return Result.failure(IllegalStateException("Não é possível alterar o estado de um pedido já concluído ou rejeitado"))
+        }
         pedidoDao.atualizar(pedido.copy(estado = novoEstado))
+        return Result.success(Unit)
     }
 
     // Ação do Admin: elimina definitivamente um pedido, seja qual for o seu estado.

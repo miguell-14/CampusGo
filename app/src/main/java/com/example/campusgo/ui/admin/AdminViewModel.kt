@@ -35,7 +35,8 @@ class AdminViewModel(
     val utilizadores: StateFlow<List<Utilizador>> = utilizadorRepository.getTodos()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Muda o estado de um pedido — o Admin pode mover para qualquer um dos 4 estados.
+    // Muda o estado de um pedido. A UI já impede tentar isto quando o estado atual é final
+    // (Concluído/Rejeitado) — o repositório recusa na mesma, por segurança.
     fun alterarEstado(pedido: Pedido, novoEstado: EstadoPedido) {
         viewModelScope.launch {
             pedidoRepository.atualizarEstado(pedido, novoEstado)

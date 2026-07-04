@@ -2,6 +2,7 @@ package com.example.campusgo.ui.pedido
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,7 +47,8 @@ fun DetalhePedidoScreen(
         Column(
             modifier = modifierConteudo
                 .fillMaxSize()
-                .padding(24.dp)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center
         ) {
             if (pedido == null) {
                 // Pode acontecer se o pedido tiver sido cancelado entretanto noutro ecrã.

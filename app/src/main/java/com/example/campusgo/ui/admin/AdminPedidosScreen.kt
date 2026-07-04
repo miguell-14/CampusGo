@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.example.campusgo.data.model.EstadoPedido
 import com.example.campusgo.data.model.Pedido
@@ -48,11 +49,18 @@ fun AdminPedidosContent(
 
     // Filtro por estado (null = mostrar todos). Aplicado em memória sobre a lista já carregada.
     var filtroEstado by remember { mutableStateOf<EstadoPedido?>(null) }
-    val pedidosFiltrados = if (filtroEstado == null) {
+    val pedidosFiltradosBase = if (filtroEstado == null) {
         pedidos
     } else {
         pedidos.filter { it.estado == filtroEstado }
     }
+
+    // Mesma ordenação do Utilizador: pendentes (Submetido/Em análise) primeiro, resolvidos
+    // (Concluído/Rejeitado) no fim — estes últimos aparecem esbatidos no PedidoAdminItem.
+    val (pendentes, resolvidos) = pedidosFiltradosBase.partition {
+        it.estado == EstadoPedido.SUBMETIDO || it.estado == EstadoPedido.EM_ANALISE
+    }
+    val pedidosFiltrados = pendentes + resolvidos
 
     // Um único LazyColumn (cabeçalho e filtros incluídos como itens) para a saudação deslizar
     // junto com a lista, em vez de ficar fixa a ocupar espaço quando há muitos pedidos.
@@ -155,9 +163,19 @@ private fun PedidoAdminItem(
     nomeUtilizador: String,
     onAbrirDetalhe: () -> Unit
 ) {
+    // Pedidos já resolvidos (Concluído/Rejeitado) aparecem esbatidos — leem-se como histórico,
+    // tal como no PedidoItem do Utilizador.
+    val opacidade = if (pedido.estado == EstadoPedido.CONCLUIDO || pedido.estado == EstadoPedido.REJEITADO) {
+        0.6f
+    } else {
+        1f
+    }
+
     Card(
         onClick = onAbrirDetalhe,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(opacidade)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(

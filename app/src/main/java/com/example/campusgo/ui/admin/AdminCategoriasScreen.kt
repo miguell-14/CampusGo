@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -24,24 +23,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.campusgo.data.model.Categoria
 
-// Conteúdo do separador "Categorias" da home do Admin: CRUD de categorias. Criar (formulário no
-// topo), editar e eliminar (por categoria, na lista) — eliminar é bloqueado pelo ViewModel se a
-// categoria ainda tiver pedidos associados (decisão 3 do NOTAS.md).
+// Conteúdo do separador "Categorias" da home do Admin: estatística simples (total), lista de
+// categorias com "Editar"/"Eliminar" — eliminar é bloqueado pelo ViewModel se a categoria ainda
+// tiver pedidos associados (decisão 3 do NOTAS.md). Criar é feito pelo FAB (ver AdminHomeScreen),
+// não por um formulário fixo no topo — pouco frequente para justificar ocupar sempre espaço.
 @Composable
 fun AdminCategoriasContent(
     modifier: Modifier = Modifier,
-    viewModel: AdminCategoriasViewModel
+    viewModel: AdminCategoriasViewModel,
+    mostrarDialogoCriar: Boolean,
+    onFecharDialogoCriar: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val categorias by viewModel.categorias.collectAsState()
-
-    var nomeNova by remember { mutableStateOf("") }
-    var descricaoNova by remember { mutableStateOf("") }
-    var validationError by remember { mutableStateOf<String?>(null) }
 
     // Categoria selecionada para editar/eliminar (null = nenhum diálogo aberto).
     var categoriaParaEditar by remember { mutableStateOf<Categoria?>(null) }
@@ -52,42 +52,15 @@ fun AdminCategoriasContent(
             .fillMaxSize()
             .padding(24.dp)
     ) {
-        // Formulário de criação de categoria nova.
-        OutlinedTextField(
-            value = nomeNova,
-            onValueChange = { nomeNova = it },
-            label = { Text("Nome da categoria") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = descricaoNova,
-            onValueChange = { descricaoNova = it },
-            label = { Text("Descrição (opcional)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        validationError?.let { mensagem ->
-            Spacer(Modifier.height(8.dp))
-            Text(text = mensagem, color = MaterialTheme.colorScheme.error)
+        // Estatística simples (valorização do enunciado): total de categorias existentes.
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = "Total de categorias: ", style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = categorias.size.toString(),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
         }
-        Spacer(Modifier.height(8.dp))
-        Button(
-            onClick = {
-                if (nomeNova.isBlank()) {
-                    validationError = "Introduz o nome da categoria"
-                } else {
-                    validationError = null
-                    viewModel.criar(nomeNova.trim(), descricaoNova.trim().ifBlank { null })
-                    nomeNova = ""
-                    descricaoNova = ""
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Criar categoria")
-        }
-
         Spacer(Modifier.height(24.dp))
 
         // Lista de categorias existentes, cada uma com "Editar" e "Eliminar".
@@ -110,6 +83,17 @@ fun AdminCategoriasContent(
                 }
             }
         }
+    }
+
+    // Diálogo de criação — aberto a partir do FAB na AdminHomeScreen.
+    if (mostrarDialogoCriar) {
+        CriarCategoriaDialog(
+            onConfirmar = { nome, descricao ->
+                viewModel.criar(nome, descricao)
+                onFecharDialogoCriar()
+            },
+            onDismiss = onFecharDialogoCriar
+        )
     }
 
     // Diálogo de edição — pré-preenchido com o nome/descrição atuais da categoria escolhida.
@@ -175,7 +159,11 @@ private fun CategoriaItem(
                 Text(text = descricao, style = MaterialTheme.typography.bodyMedium)
             }
             Spacer(Modifier.height(4.dp))
-            Row {
+            // Alinhados à direita — mais fácil de alcançar com o polegar do que à esquerda.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
                 TextButton(onClick = onEditar) {
                     Text("Editar")
                 }
@@ -185,6 +173,60 @@ private fun CategoriaItem(
             }
         }
     }
+}
+
+// Diálogo de criação de uma categoria nova — aberto a partir do FAB da AdminHomeScreen.
+@Composable
+private fun CriarCategoriaDialog(
+    onConfirmar: (nome: String, descricao: String?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var nome by remember { mutableStateOf("") }
+    var descricao by remember { mutableStateOf("") }
+    var erro by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Criar categoria") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = nome,
+                    onValueChange = { nome = it },
+                    label = { Text("Nome") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = descricao,
+                    onValueChange = { descricao = it },
+                    label = { Text("Descrição (opcional)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                erro?.let { mensagem ->
+                    Spacer(Modifier.height(8.dp))
+                    Text(text = mensagem, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                if (nome.isBlank()) {
+                    erro = "Introduz o nome da categoria"
+                } else {
+                    onConfirmar(nome.trim(), descricao.trim().ifBlank { null })
+                }
+            }) {
+                Text("Criar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
 
 // Diálogo de edição de nome/descrição de uma categoria existente.
