@@ -1,6 +1,6 @@
 # CampusGo
 <p align="center">
-  <img src="docs/CampusGoLogo_readme.png" alt="Logótipo CampusGo" />
+  <img src="docs/CampusGoLogo.png" alt="Logótipo CampusGo" />
 </p>
 Aplicação Android de gestão de serviços de campus — registo e acompanhamento de pedidos/ocorrências (limpeza, manutenção, segurança, informática), com dois perfis: Utilizador e Administrador.
 
